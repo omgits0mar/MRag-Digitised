@@ -51,7 +51,7 @@ As a developer, I want structured logging available across all modules so that I
 **Acceptance Scenarios**:
 
 1. **Given** any module in the project, **When** it requests a logger, **Then** it receives a structured logger that outputs entries with timestamp, module name, log level, and arbitrary context fields.
-2. **Given** a log entry is produced, **When** a developer or monitoring system reads it, **Then** the output is in a structured, machine-parseable format.
+2. **Given** a log entry is produced, **When** a developer or monitoring system reads it, **Then** the output is a valid JSON object (JSON lines format) parseable by standard JSON tooling.
 3. **Given** the logging system, **When** a developer configures the log level via the configuration system, **Then** only log entries at or above that level are emitted.
 
 ---
@@ -94,16 +94,18 @@ As a developer, I want a common exception hierarchy so that all modules raise do
 - What happens when a configuration value has an invalid type (e.g., a string where an integer is expected)? The system should raise a clear validation error at startup, not at first use.
 - What happens when two modules request loggers with the same name? Each should receive an independent logger instance bound to that name without interference.
 - What happens when the project is installed on a system with Python below 3.10? The installation should fail with a clear error message about the minimum Python version requirement.
+- What happens when a module logs a context dict that contains a sensitive config value (e.g., an API key)? The logging system should automatically redact the value before writing the log entry.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
 - **FR-001**: The project MUST provide a standardized directory structure with dedicated, importable sub-packages for each of the nine core modules (data processing, embeddings, retrieval, query processing, response generation, caching, API, database, evaluation).
-- **FR-002**: The project MUST provide a centralized configuration system that loads settings from environment variables and `.env` files, with environment variables taking precedence.
-- **FR-003**: The configuration system MUST validate all values against their declared types at initialization time, failing fast with descriptive error messages for invalid or missing required values.
-- **FR-004**: The project MUST provide a structured logging utility that produces machine-parseable output containing timestamp, module name, log level, and structured context fields.
+- **FR-002**: The project MUST provide a centralized configuration system that loads settings from environment variables and `.env` files, with environment variables taking precedence. Configuration MUST be immutable after initialization — modules can read but never mutate loaded values. Runtime changes require a restart.
+- **FR-003**: The configuration system MUST validate all values against their declared types at initialization time, collecting all validation errors and reporting them together in a single descriptive error message (not failing on the first error alone).
+- **FR-004**: The project MUST provide a structured logging utility that produces JSON lines output (one JSON object per log entry) containing timestamp, module name, log level, and structured context fields.
 - **FR-005**: The logging system MUST support configurable log levels controlled through the centralized configuration system.
+- **FR-005a**: The logging system MUST automatically redact sensitive configuration fields (API keys, secrets, credentials) when they appear in log output, replacing values with a masked placeholder (e.g., `"***"`).
 - **FR-006**: The project MUST provide a shared exception hierarchy with a base project exception and module-specific exception subclasses.
 - **FR-007**: The project MUST provide an example configuration file documenting every configurable value with its name, type, default, and description.
 - **FR-008**: The project MUST provide single-command access to install dependencies, run tests, run formatting, and run linting.
@@ -125,9 +127,18 @@ As a developer, I want a common exception hierarchy so that all modules raise do
 - **SC-001**: A developer can go from cloning the repository to a fully installed, working development environment in under 5 minutes using documented commands.
 - **SC-002**: All quality checks (formatting, linting, tests) pass with zero errors and zero warnings on the initial project scaffold.
 - **SC-003**: 100% of configurable values are loaded through the centralized configuration system — no hardcoded settings exist in any source file.
-- **SC-004**: Every log entry produced by the system is in a structured, machine-parseable format with all required fields (timestamp, module, level, context).
+- **SC-004**: Every log entry produced by the system is a valid JSON object (JSON lines format) with all required fields (timestamp, module, level, context).
 - **SC-005**: Configuration validation catches 100% of type mismatches and missing required values at startup, before any module logic executes.
 - **SC-006**: All nine module sub-packages are importable immediately after installation, ready for feature development in subsequent phases.
+
+## Clarifications
+
+### Session 2026-04-06
+
+- Q: Is configuration immutable after startup, or should modules be able to reload/mutate it at runtime? → A: Immutable after startup (load-once, read-many). Runtime changes require a restart.
+- Q: When multiple configuration values are invalid or missing, should all errors be reported at once or fail on first? → A: Aggregate all errors — collect and report every invalid/missing value in one error message.
+- Q: Should "machine-parseable" log output specifically mean JSON lines format? → A: Yes, JSON lines — one JSON object per log entry.
+- Q: Should the logging system automatically redact sensitive configuration values (API keys, secrets) in log output? → A: Yes, auto-redact — sensitive config fields are masked in log output.
 
 ## Assumptions
 

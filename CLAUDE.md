@@ -61,3 +61,12 @@ Branch naming convention: `001-feature-name` or `20260319-143022-feature-name`.
 - Pydantic models for all request/response validation at API boundaries
 - Dependencies pinned with exact versions in `requirements.txt` or `pyproject.toml`
 - Secrets via environment variables or `.env` files (gitignored)
+
+## Active Technologies
+- Python 3.10+ + pydantic (v2), pydantic-settings, structlog, black, ruff, pytest, pytest-asyncio, pytest-cov, python-dotenv (001-project-foundation)
+- N/A (foundation only; SQLite/MySQL deferred to Feature 008) (001-project-foundation)
+- Python 3.10+ (established in Feature 000) + Pandas 2.2.3, NumPy 2.2.6, sentence-transformers 4.1.0, faiss-cpu 1.11.0, Pydantic 2.11.3, structlog 25.2.0 (002-phase1-rag-pipeline)
+- FAISS index files (`.faiss`) + JSON metadata files (no database in Phase 1) (002-phase1-rag-pipeline)
+
+## Recent Changes
+- 001-project-foundation: Added Python 3.10+ + pydantic (v2), pydantic-settings, structlog, black, ruff, pytest, pytest-asyncio, pytest-cov, python-dotenv
