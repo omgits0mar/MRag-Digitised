@@ -19,8 +19,8 @@
 
 **Purpose**: Extend existing project foundation with sample data fixtures and directory structure for Phase 1
 
-- [ ] T001 Create sample test data fixtures (100-row CSV, edge-case records) in tests/conftest.py
-- [ ] T002 [P] Ensure data directory structure exists: data/raw/, data/processed/, data/evaluation/
+- [x] T001 Create sample test data fixtures (100-row CSV, edge-case records) in tests/conftest.py
+- [x] T002 [P] Ensure data directory structure exists: data/raw/, data/processed/, data/evaluation/
 
 **Checkpoint**: Test fixtures available, data directories ready
 
@@ -30,8 +30,8 @@
 
 **Purpose**: Shared Pydantic data models used across multiple user stories. MUST complete before any user story.
 
-- [ ] T003 Create data models (RawRecord, ProcessedDocument, TextChunk, DocumentMetadata, PipelineResult) in src/mrag/data/models.py
-- [ ] T004 Create unit tests for data models (validation, constraints, edge cases) in tests/unit/test_data_models.py
+- [x] T003 Create data models (RawRecord, ProcessedDocument, TextChunk, DocumentMetadata, PipelineResult) in src/mrag/data/models.py
+- [x] T004 Create unit tests for data models (validation, constraints, edge cases) in tests/unit/test_data_models.py
 
 **Checkpoint**: All data models importable, validation works. `python -c "from mrag.data.models import ProcessedDocument, TextChunk"` succeeds.
 
@@ -45,11 +45,11 @@
 
 ### Tests for User Story 1
 
-- [ ] T005 [P] [US1] Create unit tests for ingestion (valid CSV, malformed records, missing columns, empty rows, encoding) in tests/unit/test_ingestion.py
+- [x] T005 [P] [US1] Create unit tests for ingestion (valid CSV, malformed records, missing columns, empty rows, encoding) in tests/unit/test_ingestion.py
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Implement load_dataset() with Pandas CSV/JSON loading, RawRecord validation, skip-and-log for malformed records in src/mrag/data/ingestion.py
+- [x] T006 [US1] Implement load_dataset() with Pandas CSV/JSON loading, RawRecord validation, skip-and-log for malformed records in src/mrag/data/ingestion.py
 
 **Checkpoint**: `load_dataset("tests/fixtures/sample.csv")` returns list of RawRecord, logs skipped records. Tests pass.
 
@@ -63,11 +63,11 @@
 
 ### Tests for User Story 2
 
-- [ ] T007 [P] [US2] Create unit tests for chunking (sizes, overlap, sentence boundaries, short text, unicode, determinism) in tests/unit/test_chunking.py
+- [x] T007 [P] [US2] Create unit tests for chunking (sizes, overlap, sentence boundaries, short text, unicode, determinism) in tests/unit/test_chunking.py
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] Implement TextChunker class with sliding window, sentence-boundary alignment, configurable chunk_size and chunk_overlap in src/mrag/data/chunking.py
+- [x] T008 [US2] Implement TextChunker class with sliding window, sentence-boundary alignment, configurable chunk_size and chunk_overlap in src/mrag/data/chunking.py
 
 **Checkpoint**: `TextChunker(512, 50).chunk(text, "doc1")` returns list of TextChunk with correct boundaries. Tests pass.
 
@@ -81,13 +81,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T009 [P] [US3] Create unit tests for enrichment (question type patterns, domain classification, difficulty scoring, edge cases) in tests/unit/test_enrichment.py
+- [x] T009 [P] [US3] Create unit tests for enrichment (question type patterns, domain classification, difficulty scoring, edge cases) in tests/unit/test_enrichment.py
 
 ### Implementation for User Story 3
 
-- [ ] T010 [US3] Implement question type classifier (regex-based: factoid, descriptive, list, yes_no, unknown) in src/mrag/data/enrichment.py
-- [ ] T011 [US3] Implement domain classifier (TF-IDF with predefined domain keywords) in src/mrag/data/enrichment.py
-- [ ] T012 [US3] Implement difficulty scorer and enrich() function combining all classifiers in src/mrag/data/enrichment.py
+- [x] T010 [US3] Implement question type classifier (regex-based: factoid, descriptive, list, yes_no, unknown) in src/mrag/data/enrichment.py
+- [x] T011 [US3] Implement domain classifier (TF-IDF with predefined domain keywords) in src/mrag/data/enrichment.py
+- [x] T012 [US3] Implement difficulty scorer and enrich() function combining all classifiers in src/mrag/data/enrichment.py
 
 **Checkpoint**: `enrich("Who is Einstein?", "physicist", "Albert Einstein was...")` returns DocumentMetadata with question_type="factoid". Tests pass.
 
@@ -101,13 +101,13 @@
 
 ### Tests for User Story 7
 
-- [ ] T013 [P] [US7] Create unit tests for export (JSONL format, split ratio, determinism, field preservation) in tests/unit/test_export.py
-- [ ] T014 [P] [US7] Create integration test for full data pipeline (100-row end-to-end) in tests/integration/test_data_pipeline.py
+- [x] T013 [P] [US7] Create unit tests for export (JSONL format, split ratio, determinism, field preservation) in tests/unit/test_export.py
+- [x] T014 [P] [US7] Create integration test for full data pipeline (100-row end-to-end) in tests/integration/test_data_pipeline.py
 
 ### Implementation for User Story 7
 
-- [ ] T015 [US7] Implement export_jsonl() with JSONL serialization, train_test_split with fixed seed, statistics logging in src/mrag/data/export.py
-- [ ] T016 [US7] Implement run_pipeline() orchestrating ingest → chunk → enrich → export with validation at each boundary in src/mrag/data/pipeline.py
+- [x] T015 [US7] Implement export_jsonl() with JSONL serialization, train_test_split with fixed seed, statistics logging in src/mrag/data/export.py
+- [x] T016 [US7] Implement run_pipeline() orchestrating ingest → chunk → enrich → export with validation at each boundary in src/mrag/data/pipeline.py
 
 **Checkpoint**: `run_pipeline(config)` produces train.jsonl + eval.jsonl in data/processed/. Integration test passes end-to-end.
 
@@ -121,11 +121,11 @@
 
 ### Tests for User Story 4
 
-- [ ] T017 [P] [US4] Create unit tests for encoder (single/batch encoding, L2 normalization, cross-lingual similarity, empty input, dimension consistency) in tests/unit/test_encoder.py
+- [x] T017 [P] [US4] Create unit tests for encoder (single/batch encoding, L2 normalization, cross-lingual similarity, empty input, dimension consistency) in tests/unit/test_encoder.py
 
 ### Implementation for User Story 4
 
-- [ ] T018 [US4] Implement EmbeddingEncoder class wrapping SentenceTransformer with lazy loading, encode() batch method with L2 normalization, encode_single() convenience method in src/mrag/embeddings/encoder.py
+- [x] T018 [US4] Implement EmbeddingEncoder class wrapping SentenceTransformer with lazy loading, encode() batch method with L2 normalization, encode_single() convenience method in src/mrag/embeddings/encoder.py
 
 **Checkpoint**: `EmbeddingEncoder().encode(["hello", "world"])` returns (2, 384) L2-normalized ndarray. Cross-lingual test passes. Tests pass.
 
@@ -139,15 +139,15 @@
 
 ### Tests for User Story 5
 
-- [ ] T019 [P] [US5] Create unit tests for FAISSIndexer (build, search accuracy, save/load roundtrip, dimension validation) in tests/unit/test_indexer.py
-- [ ] T020 [P] [US5] Create unit tests for MetadataStore (add, get, filter, save/load, key errors) in tests/unit/test_metadata_store.py
-- [ ] T021 [P] [US5] Create integration test for embedding pipeline (100-chunk embed → index → search) in tests/integration/test_embedding_pipeline.py
+- [x] T019 [P] [US5] Create unit tests for FAISSIndexer (build, search accuracy, save/load roundtrip, dimension validation) in tests/unit/test_indexer.py
+- [x] T020 [P] [US5] Create unit tests for MetadataStore (add, get, filter, save/load, key errors) in tests/unit/test_metadata_store.py
+- [x] T021 [P] [US5] Create integration test for embedding pipeline (100-chunk embed → index → search) in tests/integration/test_embedding_pipeline.py
 
 ### Implementation for User Story 5
 
-- [ ] T022 [US5] Implement FAISSIndexer class with IndexFlatIP, build_index(), search(), save(), load(), dimension validation in src/mrag/embeddings/indexer.py
-- [ ] T023 [US5] Implement MetadataStore class with JSON-backed dict, add(), get(), filter(), save(), load() in src/mrag/embeddings/metadata_store.py
-- [ ] T024 [US5] Implement run_embedding_pipeline() orchestrating load JSONL → embed → index → save metadata in src/mrag/embeddings/pipeline.py
+- [x] T022 [US5] Implement FAISSIndexer class with IndexFlatIP, build_index(), search(), save(), load(), dimension validation in src/mrag/embeddings/indexer.py
+- [x] T023 [US5] Implement MetadataStore class with JSON-backed dict, add(), get(), filter(), save(), load() in src/mrag/embeddings/metadata_store.py
+- [x] T024 [US5] Implement run_embedding_pipeline() orchestrating load JSONL → embed → index → save metadata in src/mrag/embeddings/pipeline.py
 
 **Checkpoint**: `run_embedding_pipeline(config, "data/processed/train.jsonl")` produces index.faiss + metadata.json. Integration test passes.
 
@@ -161,15 +161,15 @@
 
 ### Tests for User Story 6
 
-- [ ] T025 [P] [US6] Create unit tests for ranking (weighted scoring formula, determinism, score bounds, sort order) in tests/unit/test_ranking.py
-- [ ] T026 [P] [US6] Create unit tests for retriever (top-K enforcement, threshold filtering, metadata filtering, empty results) in tests/unit/test_retriever.py
-- [ ] T027 [P] [US6] Create integration test for retrieval pipeline (natural language query → ranked results with metadata) in tests/integration/test_retrieval_pipeline.py
+- [x] T025 [P] [US6] Create unit tests for ranking (weighted scoring formula, determinism, score bounds, sort order) in tests/unit/test_ranking.py
+- [x] T026 [P] [US6] Create unit tests for retriever (top-K enforcement, threshold filtering, metadata filtering, empty results) in tests/unit/test_retriever.py
+- [x] T027 [P] [US6] Create integration test for retrieval pipeline (natural language query → ranked results with metadata) in tests/integration/test_retrieval_pipeline.py
 
 ### Implementation for User Story 6
 
-- [ ] T028 [US6] Create RetrievalRequest and RetrievalResult Pydantic models in src/mrag/retrieval/models.py
-- [ ] T029 [US6] Implement rerank() with weighted scoring (alpha * cosine_sim + (1-alpha) * metadata_boost), metadata boost computation, score capping in src/mrag/retrieval/ranking.py
-- [ ] T030 [US6] Implement RetrieverService class composing encoder + indexer + metadata_store + ranking with over-fetch, metadata filtering, threshold filtering in src/mrag/retrieval/retriever.py
+- [x] T028 [US6] Create RetrievalRequest and RetrievalResult Pydantic models in src/mrag/retrieval/models.py
+- [x] T029 [US6] Implement rerank() with weighted scoring (alpha * cosine_sim + (1-alpha) * metadata_boost), metadata boost computation, score capping in src/mrag/retrieval/ranking.py
+- [x] T030 [US6] Implement RetrieverService class composing encoder + indexer + metadata_store + ranking with over-fetch, metadata filtering, threshold filtering in src/mrag/retrieval/retriever.py
 
 **Checkpoint**: `RetrieverService.retrieve(RetrievalRequest(query="What is photosynthesis?"))` returns ranked results with complete metadata. All tests pass. End of Phase 1 pipeline functional.
 
@@ -179,9 +179,9 @@
 
 **Purpose**: Final validation, lint compliance, and end-to-end verification
 
-- [ ] T031 Run `make lint` and fix any ruff/black violations across all new files in src/mrag/data/, src/mrag/embeddings/, src/mrag/retrieval/
-- [ ] T032 Run `make test` and ensure all unit + integration tests pass with zero failures
-- [ ] T033 Validate quickstart.md scenarios work end-to-end on sample data
+- [x] T031 Run `make lint` and fix any ruff/black violations across all new files in src/mrag/data/, src/mrag/embeddings/, src/mrag/retrieval/
+- [x] T032 Run `make test` and ensure all unit + integration tests pass with zero failures
+- [x] T033 Validate quickstart.md scenarios work end-to-end on sample data
 
 ---
 
