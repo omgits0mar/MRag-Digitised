@@ -79,6 +79,8 @@ Branch naming convention: `001-feature-name` or `20260319-143022-feature-name`.
 - N/A (foundation only; SQLite/MySQL deferred to Feature 008) (001-project-foundation)
 - Python 3.10+ (established in Feature 000) + Pandas 2.2.3, NumPy 2.2.6, sentence-transformers 4.1.0, faiss-cpu 1.11.0, Pydantic 2.11.3, structlog 25.2.0 (002-phase1-rag-pipeline)
 - FAISS index files (`.faiss`) + JSON metadata files (no database in Phase 1) (002-phase1-rag-pipeline)
+- Python 3.10+ (conda environment `mrag`) + sentence-transformers 4.1.0, faiss-cpu 1.11.0, httpx 0.28.1, Jinja2, Pydantic 2.11.3, structlog 25.2.0, NumPy 2.2.6 (003-phase2-rag-pipeline)
+- FAISS index files (.faiss) + JSON metadata files (no database in Phase 2) (003-phase2-rag-pipeline)
 
 ## Recent Changes
 - 002-phase1-rag-pipeline: Fixed CSV column mapping to match actual Natural-Questions-Filtered.csv schema; load_dataset now returns (records, skipped_count); source_id is deterministic MD5 hash
