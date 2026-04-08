@@ -39,15 +39,17 @@ class Difficulty(str, Enum):
 
 
 class RawRecord(BaseModel):
-    """Raw input from the Natural Questions dataset before processing."""
+    """Raw input from the Natural Questions dataset before processing.
 
-    question_text: str
-    short_answer: str | None = None
-    long_answer: str
-    document_title: str | None = None
-    document_url: str | None = None
+    Field names match the Natural-Questions-Filtered.csv column headers:
+    question, short_answers, long_answers.
+    """
 
-    @field_validator("question_text", "long_answer")
+    question: str
+    short_answers: str | None = None
+    long_answers: str
+
+    @field_validator("question", "long_answers")
     @classmethod
     def must_be_non_empty(cls, v: str) -> str:
         stripped = v.strip()
@@ -55,7 +57,7 @@ class RawRecord(BaseModel):
             raise ValueError("field must be non-empty after stripping whitespace")
         return stripped
 
-    @field_validator("short_answer")
+    @field_validator("short_answers")
     @classmethod
     def strip_short_answer(cls, v: str | None) -> str | None:
         if v is not None:

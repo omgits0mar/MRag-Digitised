@@ -4,15 +4,15 @@
 
 ## Ingestion Interface
 
-### `load_dataset(file_path: str, file_format: str = "csv") -> list[RawRecord]`
+### `load_dataset(file_path: str, file_format: str = "csv") -> tuple[list[RawRecord], int]`
 
-Load and validate raw dataset from file.
+Load and validate raw dataset from file. Dataset columns: `question`, `short_answers`, `long_answers` (matching `Natural-Questions-Filtered.csv`).
 
 **Input**:
 - `file_path`: Path to the raw dataset file (CSV or JSON)
 - `file_format`: One of `"csv"`, `"json"`
 
-**Output**: List of validated `RawRecord` objects
+**Output**: Tuple of (validated `RawRecord` objects, skipped record count)
 
 **Errors**:
 - `DataProcessingError` if file not found, unreadable, or schema validation fails on all records

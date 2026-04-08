@@ -17,8 +17,9 @@ Build the complete Phase 1 foundation for the MRAG platform: a data processing p
 **Target Platform**: Local development machine (Linux/macOS), CPU-only (GPU optional)
 **Project Type**: Library (Python package) — CLI pipeline runners with programmatic API
 **Performance Goals**: <200ms retrieval latency for K=10, <30 min full dataset processing, <5s index load
-**Constraints**: Multilingual (50+ languages), offline-capable after dataset download, ~300K records
-**Scale/Scope**: ~300K question-answer pairs, ~500K-1M chunks after splitting, single-node FAISS
+**Constraints**: Multilingual (50+ languages), offline-capable after dataset download, ~86K records
+**Scale/Scope**: ~86K question-answer pairs (Natural-Questions-Filtered.csv), ~86K-200K chunks after splitting, single-node FAISS
+**Dataset Schema**: 3 columns — `question` (str), `short_answers` (str), `long_answers` (str)
 
 ## Constitution Check
 
@@ -120,7 +121,9 @@ data/
 
 **Ingestion** (`ingestion.py`):
 - Load CSV/JSON using `pandas.read_csv()` / `pandas.read_json()`
-- Validate each row against `RawRecord` Pydantic model
+- Dataset: `Natural-Questions-Filtered.csv` with columns `question`, `short_answers`, `long_answers` (~86K rows)
+- Validate each row against `RawRecord` Pydantic model (fields: `question`, `short_answers`, `long_answers`)
+- Returns `tuple[list[RawRecord], int]` — validated records and skipped count
 - Skip and log invalid records; raise `DataProcessingError` only if 100% of records fail
 - Normalize text: strip whitespace, normalize Unicode (NFC), handle encoding
 
@@ -139,12 +142,13 @@ data/
   - `Is/Are/Was/Were/Do/Does/Did/Can/Could + ...?` → yes_no
   - `Explain/Describe/Why/How (does|do|is|are)` → descriptive
   - Default → unknown
-- Domain classifier: TF-IDF vectorizer fitted on predefined domain keywords, classify by highest-scoring domain
-- Difficulty: `easy` if short answer present, `medium` if long-only, `hard` if answer is ambiguous or very long
+- Domain classifier: keyword-count matching against predefined domain keyword lists (science, history, geography, health, technology, mathematics), classify by highest hit count; defaults to "general"
+- Difficulty: `easy` if short answer present, `medium` if long-only, `hard` if descriptive question with long answer >100 tokens
+- `source_id`: deterministic MD5 hash of `question:short_answers:long_answers` (16 hex chars) — satisfies FR-005
 
 **Export** (`export.py`):
 - Serialize `ProcessedDocument` to JSON, write one per line to `.jsonl`
-- Deterministic split: sort by `doc_id`, use `sklearn.model_selection.train_test_split` with fixed `random_state=42`
+- Deterministic split: sort by `doc_id`, use MD5 hash of `doc_id:seed` — `hash % 100 < split_ratio * 100` assigns to train (streaming-compatible, no dependency on record count)
 - Log statistics: total records, train count, eval count, total chunks
 
 ### Module 2: Embeddings & Indexing (`src/mrag/embeddings/`)
@@ -206,14 +210,16 @@ data/
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Embedding model | `paraphrase-multilingual-MiniLM-L12-v2` (384 dims) | 50+ languages, CPU-feasible, per Article III |
-| FAISS index | `IndexFlatIP` (exact search) | ~300K vectors, accuracy > speed per Article IV |
+| FAISS index | `IndexFlatIP` (exact search) | ~86K vectors, accuracy > speed per Article IV |
 | Vector normalization | L2-normalize before indexing | Inner product on unit vectors = cosine similarity |
 | Chunking | Sliding window, sentence-boundary aligned | Semantic coherence per Article II |
+| Dataset | `Natural-Questions-Filtered.csv` | 86K rows, 3 columns: question, short_answers, long_answers |
 | Metadata storage | JSON dict keyed by int | O(1) lookup, no DB dependency, human-readable |
 | Re-ranking | Weighted linear combination (alpha=0.7) | Beyond raw cosine per Article IV, interpretable |
-| Export format | JSONL with fixed-seed 90/10 split | Streaming, deterministic per Article II |
+| Export format | JSONL with MD5-hash 90/10 split | Streaming-compatible, deterministic per Article II |
 | Data models | Pydantic v2 models for validation | Type safety at boundaries per Article IX |
 | Question classification | Regex-based heuristics | Deterministic, no ML dependency, offline-capable |
+| Domain classification | Keyword-count matching | Simpler than TF-IDF, deterministic, sufficient for 6 domains |
 | Batch size | 64 for embeddings | Memory/throughput balance on 16GB RAM |
 
 ## Complexity Tracking

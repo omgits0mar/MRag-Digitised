@@ -176,7 +176,7 @@ A data engineer needs the processed dataset exported in a streaming-compatible f
 ### Measurable Outcomes
 
 - **SC-001**: 100% of valid records in the source dataset are processed without data loss
-- **SC-002**: Processing pipeline handles the full dataset (~300,000 records) in under 30 minutes on standard hardware
+- **SC-002**: Processing pipeline handles the full dataset (~86,000 records) in under 30 minutes on standard hardware
 - **SC-003**: Chunking is fully deterministic — same input and configuration always produces identical chunks
 - **SC-004**: Metadata enrichment covers all processed records with zero null values in required fields
 - **SC-005**: Semantically similar texts in different supported languages produce embedding similarity above 0.7
@@ -189,12 +189,12 @@ A data engineer needs the processed dataset exported in a streaming-compatible f
 
 ## Assumptions
 
-- The Natural Questions dataset is available locally as a CSV or JSON file (downloadable from standard sources such as Kaggle)
+- The dataset is `Natural-Questions-Filtered.csv` with 3 columns: `question`, `short_answers`, `long_answers` (~86,212 rows)
 - Processing runs on local hardware; no cloud infrastructure or external storage dependencies are required
 - GPU is optional for embedding generation — the system must function on CPU (with slower performance acceptable)
-- The full dataset contains approximately 300,000 question-answer pairs and fits in memory on a standard development machine (16GB+ RAM)
-- The vector index for ~300,000 vectors fits in RAM on a single node
+- The full dataset (~86K question-answer pairs) fits in memory on a standard development machine (16GB+ RAM)
+- The vector index for ~86K-200K vectors (after chunking) fits in RAM on a single node
 - Python 3.10+ runtime and the project foundation (Feature 000) are already in place
 - Network access is not required for any Phase 1 operations after initial dataset download
 - The evaluation hold-out set (10% of data) is sufficient for establishing baseline retrieval metrics
-- Short-form and long-form answers in the source dataset are distinguishable by field presence or content length
+- Short-form and long-form answers are in separate CSV columns (`short_answers` may be empty for some records)

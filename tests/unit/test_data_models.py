@@ -22,59 +22,55 @@ from mrag.data.models import (
 class TestRawRecord:
     def test_valid_record(self) -> None:
         r = RawRecord(
-            question_text="Who is Einstein?",
-            short_answer="A physicist",
-            long_answer="Albert Einstein was a theoretical physicist.",
-            document_title="Einstein",
-            document_url="https://example.com",
+            question="who is einstein",
+            short_answers="A physicist",
+            long_answers="Albert Einstein was a theoretical physicist.",
         )
-        assert r.question_text == "Who is Einstein?"
-        assert r.short_answer == "A physicist"
+        assert r.question == "who is einstein"
+        assert r.short_answers == "A physicist"
 
     def test_valid_without_optional_fields(self) -> None:
         r = RawRecord(
-            question_text="What is X?",
-            long_answer="X is something.",
+            question="what is x",
+            long_answers="X is something.",
         )
-        assert r.short_answer is None
-        assert r.document_title is None
-        assert r.document_url is None
+        assert r.short_answers is None
 
     def test_empty_question_raises(self) -> None:
         with pytest.raises(ValidationError):
-            RawRecord(question_text="", long_answer="some answer")
+            RawRecord(question="", long_answers="some answer")
 
     def test_whitespace_only_question_raises(self) -> None:
         with pytest.raises(ValidationError):
-            RawRecord(question_text="   ", long_answer="some answer")
+            RawRecord(question="   ", long_answers="some answer")
 
     def test_empty_long_answer_raises(self) -> None:
         with pytest.raises(ValidationError):
-            RawRecord(question_text="What is X?", long_answer="")
+            RawRecord(question="what is x", long_answers="")
 
     def test_whitespace_stripped(self) -> None:
         r = RawRecord(
-            question_text="  What is X?  ",
-            long_answer="  X is something.  ",
+            question="  what is x  ",
+            long_answers="  X is something.  ",
         )
-        assert r.question_text == "What is X?"
-        assert r.long_answer == "X is something."
+        assert r.question == "what is x"
+        assert r.long_answers == "X is something."
 
     def test_short_answer_none_preserved(self) -> None:
         r = RawRecord(
-            question_text="Q?",
-            long_answer="A.",
-            short_answer=None,
+            question="q",
+            long_answers="A.",
+            short_answers=None,
         )
-        assert r.short_answer is None
+        assert r.short_answers is None
 
     def test_short_answer_whitespace_becomes_none(self) -> None:
         r = RawRecord(
-            question_text="Q?",
-            long_answer="A.",
-            short_answer="   ",
+            question="q",
+            long_answers="A.",
+            short_answers="   ",
         )
-        assert r.short_answer is None
+        assert r.short_answers is None
 
 
 # ---------------------------------------------------------------------------

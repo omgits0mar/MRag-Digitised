@@ -245,3 +245,4 @@ class TestEnrich:
         assert m1.question_type == m2.question_type
         assert m1.domain == m2.domain
         assert m1.difficulty == m2.difficulty
+        assert m1.source_id == m2.source_id

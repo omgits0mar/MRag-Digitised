@@ -55,17 +55,22 @@ def run_pipeline(config: Settings | None = None) -> PipelineResult:
             detail={"data_dir": str(raw_path)},
         )
 
-    total_records = 0
-    skipped = 0
+    total_skipped = 0
     from mrag.data.models import RawRecord
 
     all_records: list[RawRecord] = []
     for file_path, file_format in all_files:
-        records = load_dataset(file_path, file_format)
+        records, skipped = load_dataset(file_path, file_format)
         all_records.extend(records)
+        total_skipped += skipped
 
-    total_records = len(all_records)
-    logger.info("ingest_complete", total_records=total_records)
+    total_records = len(all_records) + total_skipped
+    logger.info(
+        "ingest_complete",
+        total_records=total_records,
+        valid=len(all_records),
+        skipped=total_skipped,
+    )
 
     # Stage 2: Chunk
     chunker = TextChunker(
@@ -79,23 +84,23 @@ def run_pipeline(config: Settings | None = None) -> PipelineResult:
 
     for raw in all_records:
         # Chunk the long answer
-        chunks = chunker.chunk(raw.long_answer, doc_id="placeholder")
+        chunks = chunker.chunk(raw.long_answers, doc_id="placeholder")
 
         # Enrich metadata
         metadata = enrich(
-            question=raw.question_text,
-            answer_short=raw.short_answer,
-            answer_long=raw.long_answer,
+            question=raw.question,
+            answer_short=raw.short_answers,
+            answer_long=raw.long_answers,
         )
 
         # Determine answer type
-        has_short = raw.short_answer is not None and raw.short_answer.strip() != ""
+        has_short = raw.short_answers is not None and raw.short_answers.strip() != ""
         answer_type = AnswerType.BOTH if has_short else AnswerType.LONG
 
         doc = ProcessedDocument(
-            question=raw.question_text,
-            answer_short=raw.short_answer,
-            answer_long=raw.long_answer,
+            question=raw.question,
+            answer_short=raw.short_answers,
+            answer_long=raw.long_answers,
             answer_type=answer_type,
             chunks=chunks,
             metadata=metadata,
@@ -137,7 +142,7 @@ def run_pipeline(config: Settings | None = None) -> PipelineResult:
     result = PipelineResult(
         total_records=total_records,
         valid_records=len(processed_docs),
-        skipped_records=skipped,
+        skipped_records=total_skipped,
         total_chunks=total_chunks,
         train_count=train_count,
         eval_count=eval_count,

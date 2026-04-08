@@ -62,6 +62,18 @@ Branch naming convention: `001-feature-name` or `20260319-143022-feature-name`.
 - Dependencies pinned with exact versions in `requirements.txt` or `pyproject.toml`
 - Secrets via environment variables or `.env` files (gitignored)
 
+## Dataset
+
+**Source**: `Natural-Questions-Filtered.csv` (~86,212 rows, 3 columns)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `question` | str | Natural language question (lowercase, no trailing punctuation) |
+| `short_answers` | str | Concise answer (present for most records) |
+| `long_answers` | str | Long-form answer / document context |
+
+**Internal field mapping**: CSV `question` -> `RawRecord.question` -> `ProcessedDocument.question`; CSV `short_answers` -> `RawRecord.short_answers` -> `ProcessedDocument.answer_short`; CSV `long_answers` -> `RawRecord.long_answers` -> `ProcessedDocument.answer_long`
+
 ## Active Technologies
 - Python 3.10+ + pydantic (v2), pydantic-settings, structlog, black, ruff, pytest, pytest-asyncio, pytest-cov, python-dotenv (001-project-foundation)
 - N/A (foundation only; SQLite/MySQL deferred to Feature 008) (001-project-foundation)
@@ -69,4 +81,5 @@ Branch naming convention: `001-feature-name` or `20260319-143022-feature-name`.
 - FAISS index files (`.faiss`) + JSON metadata files (no database in Phase 1) (002-phase1-rag-pipeline)
 
 ## Recent Changes
+- 002-phase1-rag-pipeline: Fixed CSV column mapping to match actual Natural-Questions-Filtered.csv schema; load_dataset now returns (records, skipped_count); source_id is deterministic MD5 hash
 - 001-project-foundation: Added Python 3.10+ + pydantic (v2), pydantic-settings, structlog, black, ruff, pytest, pytest-asyncio, pytest-cov, python-dotenv

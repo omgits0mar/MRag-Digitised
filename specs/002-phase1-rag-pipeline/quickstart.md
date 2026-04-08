@@ -6,7 +6,7 @@
 
 - Python 3.10+ installed
 - Project foundation (Feature 000) complete: `make install && make test && make lint` passes
-- Natural Questions dataset downloaded (CSV format) into `data/raw/`
+- `Natural-Questions-Filtered.csv` copied into `data/raw/` (~86K rows, 3 columns: question, short_answers, long_answers)
 
 ## Setup
 
@@ -107,7 +107,7 @@ python -m pytest tests/unit/test_retriever.py -v
 ```
 data/
 ├── raw/
-│   └── natural_questions.csv    # Downloaded dataset
+│   └── Natural-Questions-Filtered.csv  # Source dataset (~86K rows)
 ├── processed/
 │   ├── train.jsonl              # Training split (90%)
 │   ├── eval.jsonl               # Evaluation split (10%)

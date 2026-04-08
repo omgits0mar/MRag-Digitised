@@ -6,7 +6,7 @@
 
 **Decision**: Load the dataset from CSV/JSON using Pandas, with schema validation via Pydantic models at ingestion boundary.
 
-**Rationale**: The Natural Questions dataset from Kaggle is distributed as CSV or simplified JSON. Pandas handles both formats efficiently with built-in dtype inference and missing-value detection. Pydantic validation at the boundary catches schema violations before data enters the pipeline.
+**Rationale**: The dataset is `Natural-Questions-Filtered.csv` (~86K rows, 3 columns: `question`, `short_answers`, `long_answers`). Pandas handles CSV/JSON formats efficiently with built-in dtype inference and missing-value detection. Pydantic validation at the boundary catches schema violations before data enters the pipeline.
 
 **Alternatives considered**:
 - Raw Python CSV reader: Too low-level, no dtype inference, poor Unicode handling
@@ -39,7 +39,7 @@
 
 **Decision**: `paraphrase-multilingual-MiniLM-L12-v2` from Sentence Transformers. 384-dimensional embeddings, 50+ languages, ~120MB model size.
 
-**Rationale**: Constitution (Article III) mandates multilingual from day one. This model balances quality, speed, and size — 384 dims is manageable for FAISS with ~300K vectors (~440MB index). It outperforms monolingual models on cross-lingual retrieval benchmarks while remaining CPU-feasible.
+**Rationale**: Constitution (Article III) mandates multilingual from day one. This model balances quality, speed, and size — 384 dims is manageable for FAISS with ~86K vectors (~130MB index). It outperforms monolingual models on cross-lingual retrieval benchmarks while remaining CPU-feasible.
 
 **Alternatives considered**:
 - `all-MiniLM-L6-v2`: Faster but English-only — violates Article III
@@ -50,7 +50,7 @@
 
 **Decision**: `IndexFlatIP` (exact inner product search on L2-normalized vectors = cosine similarity).
 
-**Rationale**: Constitution (Article IV) prioritizes accuracy over speed. For ~300K 384-dim vectors, exact search is feasible in <100ms on modern hardware. L2-normalization before indexing means inner product equals cosine similarity, avoiding the need for separate distance computation.
+**Rationale**: Constitution (Article IV) prioritizes accuracy over speed. For ~86K 384-dim vectors, exact search is feasible in <100ms on modern hardware. L2-normalization before indexing means inner product equals cosine similarity, avoiding the need for separate distance computation.
 
 **Alternatives considered**:
 - `IndexIVFFlat`: ~5-10x faster for >1M vectors, but introduces recall loss. Premature for 300K vectors.
@@ -61,7 +61,7 @@
 
 **Decision**: JSON-backed dictionary keyed by integer FAISS index ID. Stored as a single JSON file alongside the FAISS index.
 
-**Rationale**: O(1) lookup by integer ID is the simplest approach that meets the constant-time access requirement. JSON is human-readable and debugging-friendly. For 300K records with ~10 fields each, the JSON file is ~50-100MB — fits in memory easily.
+**Rationale**: O(1) lookup by integer ID is the simplest approach that meets the constant-time access requirement. JSON is human-readable and debugging-friendly. For ~86K records with ~10 fields each, the JSON file is ~20-50MB — fits in memory easily.
 
 **Alternatives considered**:
 - SQLite: More robust for larger datasets but adds complexity; not needed until Phase 3 (Feature 008)
@@ -94,7 +94,7 @@
 
 **Decision**: Process embeddings in batches of 64 samples. Configurable via settings.
 
-**Rationale**: Batch size 64 balances memory usage (~25MB per batch at 384 dims) with throughput. Sentence Transformers natively supports batched encoding. Progress logging per batch enables monitoring for the full ~300K record run.
+**Rationale**: Batch size 64 balances memory usage (~25MB per batch at 384 dims) with throughput. Sentence Transformers natively supports batched encoding. Progress logging per batch enables monitoring for the full ~86K record run.
 
 **Alternatives considered**:
 - Single-sample encoding: Extremely slow due to Python overhead per call

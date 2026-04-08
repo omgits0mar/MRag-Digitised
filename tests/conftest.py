@@ -55,23 +55,21 @@ def sample_config_dict() -> dict[str, Any]:
 # Phase 1 — RAG Pipeline Fixtures
 # ---------------------------------------------------------------------------
 
-SAMPLE_CSV_ROWS: list[dict[str, str]] = [
+SAMPLE_CSV_ROWS: list[dict[str, str | None]] = [
     {
-        "question_text": "Who is Albert Einstein?",
-        "short_answer": "A German-born theoretical physicist",
-        "long_answer": (
+        "question": "who is albert einstein",
+        "short_answers": "A German-born theoretical physicist",
+        "long_answers": (
             "Albert Einstein was a German-born theoretical physicist who is"
             " widely held to be one of the greatest and most influential"
             " scientists of all time. He developed the theory of relativity,"
             " one of the two pillars of modern physics."
         ),
-        "document_title": "Albert Einstein - Wikipedia",
-        "document_url": "https://en.wikipedia.org/wiki/Albert_Einstein",
     },
     {
-        "question_text": "What is photosynthesis?",
-        "short_answer": "A process used by plants to convert light energy",
-        "long_answer": (
+        "question": "what is photosynthesis",
+        "short_answers": "A process used by plants to convert light energy",
+        "long_answers": (
             "Photosynthesis is a process used by plants and other organisms"
             " to convert light energy into chemical energy that, through"
             " cellular respiration, can later be released to fuel the"
@@ -79,60 +77,50 @@ SAMPLE_CSV_ROWS: list[dict[str, str]] = [
             " carbohydrate molecules such as sugars, which are synthesized"
             " from carbon dioxide and water."
         ),
-        "document_title": "Photosynthesis - Wikipedia",
-        "document_url": "https://en.wikipedia.org/wiki/Photosynthesis",
     },
     {
-        "question_text": "When did World War II end?",
-        "short_answer": "September 2, 1945",
-        "long_answer": (
+        "question": "when did world war ii end",
+        "short_answers": "September 2, 1945",
+        "long_answers": (
             "World War II ended on September 2, 1945, when Japan formally"
             " surrendered aboard the USS Missouri in Tokyo Bay. The war in"
             " Europe had ended earlier, on May 8, 1945, known as V-E Day."
         ),
-        "document_title": "World War II - Wikipedia",
-        "document_url": "https://en.wikipedia.org/wiki/World_War_II",
     },
     {
-        "question_text": "Where is the Eiffel Tower located?",
-        "short_answer": "Paris, France",
-        "long_answer": (
+        "question": "where is the eiffel tower located",
+        "short_answers": "Paris, France",
+        "long_answers": (
             "The Eiffel Tower is a wrought-iron lattice tower on the Champ"
             " de Mars in Paris, France. It is named after the engineer"
             " Gustave Eiffel, whose company designed and built the tower."
         ),
-        "document_title": "Eiffel Tower - Wikipedia",
-        "document_url": "https://en.wikipedia.org/wiki/Eiffel_Tower",
     },
     {
-        "question_text": "How does the heart pump blood?",
-        "short_answer": None,
-        "long_answer": (
+        "question": "how does the heart pump blood",
+        "short_answers": None,
+        "long_answers": (
             "The heart is a muscular organ that pumps blood through the blood"
             " vessels of the circulatory system. Blood provides the body with"
             " oxygen and nutrients, as well as assists in the removal of"
             " metabolic wastes. The heart is divided into four chambers: the"
             " left and right atria, and the left and right ventricles."
         ),
-        "document_title": "Heart - Wikipedia",
-        "document_url": "https://en.wikipedia.org/wiki/Heart",
     },
     {
-        "question_text": "Is the Earth flat?",
-        "short_answer": "No",
-        "long_answer": (
+        "question": "is the earth flat",
+        "short_answers": "No",
+        "long_answers": (
             "The Earth is not flat. It is an oblate spheroid, meaning it is"
             " mostly spherical but slightly flattened at the poles and bulging"
             " at the equator. This has been known since ancient Greek times"
             " and confirmed by modern science and space exploration."
         ),
-        "document_title": "Spherical Earth - Wikipedia",
-        "document_url": "https://en.wikipedia.org/wiki/Spherical_Earth",
     },
     {
-        "question_text": "Explain the theory of evolution.",
-        "short_answer": None,
-        "long_answer": (
+        "question": "explain the theory of evolution",
+        "short_answers": None,
+        "long_answers": (
             "The theory of evolution by natural selection was first"
             " formulated in Darwin's book 'On the Origin of Species' in 1859."
             " It describes the process by which organisms change over time as"
@@ -140,25 +128,23 @@ SAMPLE_CSV_ROWS: list[dict[str, str]] = [
             " These changes allow organisms to better adapt to their"
             " environment and help them survive and reproduce."
         ),
-        "document_title": "Evolution - Wikipedia",
-        "document_url": "https://en.wikipedia.org/wiki/Evolution",
     },
     {
-        "question_text": "List the planets in the solar system.",
-        "short_answer": "Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune",
-        "long_answer": (
+        "question": "list the planets in the solar system",
+        "short_answers": (
+            "Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune"
+        ),
+        "long_answers": (
             "The eight planets in our solar system, in order from the Sun,"
             " are Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus,"
             " and Neptune. Pluto was reclassified as a dwarf planet in 2006"
             " by the International Astronomical Union."
         ),
-        "document_title": "Solar System - Wikipedia",
-        "document_url": "https://en.wikipedia.org/wiki/Solar_System",
     },
     {
-        "question_text": "What causes earthquakes?",
-        "short_answer": "Movement of tectonic plates",
-        "long_answer": (
+        "question": "what causes earthquakes",
+        "short_answers": "Movement of tectonic plates",
+        "long_answers": (
             "Earthquakes are caused by a sudden release of energy in the"
             " Earth's lithosphere that creates seismic waves. This energy"
             " release is usually caused by the movement of tectonic plates."
@@ -166,46 +152,36 @@ SAMPLE_CSV_ROWS: list[dict[str, str]] = [
             " builds up until it exceeds the strength of the rock, causing"
             " a sudden release of energy."
         ),
-        "document_title": "Earthquake - Wikipedia",
-        "document_url": "https://en.wikipedia.org/wiki/Earthquake",
     },
     {
-        "question_text": "How many bones are in the human body?",
-        "short_answer": "206",
-        "long_answer": (
+        "question": "how many bones are in the human body",
+        "short_answers": "206",
+        "long_answers": (
             "The adult human skeleton consists of 206 bones. At birth, humans"
             " have around 270 soft bones, but as they grow, many of these"
             " fuse together to form the 206 bones of the adult skeleton."
         ),
-        "document_title": "Human skeleton - Wikipedia",
-        "document_url": "https://en.wikipedia.org/wiki/Human_skeleton",
     },
 ]
 
 # Edge-case records for testing ingestion robustness
-MALFORMED_CSV_ROWS: list[dict[str, str]] = [
-    # Missing required fields
+MALFORMED_CSV_ROWS: list[dict[str, str | None]] = [
+    # Missing required fields (empty strings)
     {
-        "question_text": "",
-        "short_answer": "some answer",
-        "long_answer": "",
-        "document_title": "Empty fields",
-        "document_url": "",
+        "question": "",
+        "short_answers": "some answer",
+        "long_answers": "",
     },
     # Only whitespace in required fields
     {
-        "question_text": "   ",
-        "short_answer": None,
-        "long_answer": "   ",
-        "document_title": "Whitespace only",
-        "document_url": "",
+        "question": "   ",
+        "short_answers": None,
+        "long_answers": "   ",
     },
-    # Missing question_text column entirely (will be handled at CSV level)
+    # Missing question column entirely (will be handled at CSV level)
     {
-        "short_answer": "answer without question",
-        "long_answer": "Some long answer text.",
-        "document_title": "Missing question",
-        "document_url": "",
+        "short_answers": "answer without question",
+        "long_answers": "Some long answer text.",
     },
 ]
 
@@ -239,8 +215,6 @@ def sample_csv_with_malformed() -> str:
 @pytest.fixture()
 def sample_csv_file(tmp_path: Any) -> str:
     """Write sample CSV to a temp file and return the path."""
-    import io
-
     import pandas as pd
 
     df = pd.DataFrame(SAMPLE_CSV_ROWS)

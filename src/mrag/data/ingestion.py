@@ -18,7 +18,9 @@ from mrag.exceptions import DataProcessingError
 logger = structlog.get_logger(__name__)
 
 
-def load_dataset(file_path: str, file_format: str = "csv") -> list[RawRecord]:
+def load_dataset(
+    file_path: str, file_format: str = "csv"
+) -> tuple[list[RawRecord], int]:
     """Load and validate raw dataset from file.
 
     Args:
@@ -26,7 +28,7 @@ def load_dataset(file_path: str, file_format: str = "csv") -> list[RawRecord]:
         file_format: One of "csv" or "json".
 
     Returns:
-        List of validated RawRecord objects.
+        Tuple of (validated records, skipped count).
 
     Raises:
         DataProcessingError: If file not found, unreadable, or all records
@@ -95,39 +97,37 @@ def load_dataset(file_path: str, file_format: str = "csv") -> list[RawRecord]:
             },
         )
 
-    return records
+    return records, skipped
 
 
 def _row_to_raw_record(row: pd.Series) -> RawRecord:
-    """Convert a DataFrame row to a RawRecord with Unicode normalization."""
-    question_text = row.get("question_text")
-    long_answer = row.get("long_answer")
-    short_answer = row.get("short_answer")
-    document_title = row.get("document_title")
-    document_url = row.get("document_url")
+    """Convert a DataFrame row to a RawRecord with Unicode normalization.
+
+    Columns match Natural-Questions-Filtered.csv: question, short_answers,
+    long_answers.
+    """
+    question = row.get("question")
+    long_answers = row.get("long_answers")
+    short_answers = row.get("short_answers")
 
     # Handle NaN from Pandas
-    question_text = _clean_pandas_value(question_text)
-    long_answer = _clean_pandas_value(long_answer)
-    short_answer = _clean_pandas_value(short_answer)
-    document_title = _clean_pandas_value(document_title)
-    document_url = _clean_pandas_value(document_url)
+    question = _clean_pandas_value(question)
+    long_answers = _clean_pandas_value(long_answers)
+    short_answers = _clean_pandas_value(short_answers)
 
-    if question_text is None or long_answer is None:
-        raise ValueError("Missing required fields: question_text or long_answer")
+    if question is None or long_answers is None:
+        raise ValueError("Missing required fields: question or long_answers")
 
     # Unicode NFC normalization
-    question_text = unicodedata.normalize("NFC", question_text)
-    long_answer = unicodedata.normalize("NFC", long_answer)
-    if short_answer is not None:
-        short_answer = unicodedata.normalize("NFC", short_answer)
+    question = unicodedata.normalize("NFC", question)
+    long_answers = unicodedata.normalize("NFC", long_answers)
+    if short_answers is not None:
+        short_answers = unicodedata.normalize("NFC", short_answers)
 
     return RawRecord(
-        question_text=question_text,
-        short_answer=short_answer,
-        long_answer=long_answer,
-        document_title=document_title,
-        document_url=document_url,
+        question=question,
+        short_answers=short_answers,
+        long_answers=long_answers,
     )
 
 

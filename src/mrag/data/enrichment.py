@@ -6,8 +6,8 @@ All classifiers are deterministic and offline-capable.
 
 from __future__ import annotations
 
+import hashlib
 import re
-import uuid
 
 import structlog
 
@@ -318,7 +318,9 @@ def enrich(
     domain = classify_domain(question, answer_short, answer_long)
     difficulty = score_difficulty(question, answer_short, answer_long)
     has_short_answer = answer_short is not None and answer_short.strip() != ""
-    source_id = str(uuid.uuid4())
+    # Deterministic source_id derived from content hash (FR-005)
+    content_key = f"{question}:{answer_short or ''}:{answer_long}"
+    source_id = hashlib.md5(content_key.encode("utf-8")).hexdigest()[:16]
 
     return DocumentMetadata(
         question_type=question_type,

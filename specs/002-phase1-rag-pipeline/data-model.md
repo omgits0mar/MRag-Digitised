@@ -6,19 +6,17 @@
 
 ### RawRecord
 
-The raw input from the Natural Questions dataset before any processing.
+The raw input from the Natural Questions dataset before any processing. Field names match the `Natural-Questions-Filtered.csv` column headers (~86K records, 3 columns).
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| question_text | str | required, non-empty | The natural language question |
-| short_answer | str \| None | optional | Concise answer if available |
-| long_answer | str | required, non-empty | Long-form answer / document context |
-| document_title | str \| None | optional | Source document title |
-| document_url | str \| None | optional | Source document URL |
+| question | str | required, non-empty | The natural language question (lowercase, no punctuation in source) |
+| short_answers | str \| None | optional | Concise answer if available |
+| long_answers | str | required, non-empty | Long-form answer / document context |
 
 **Validation rules**:
-- `question_text` must be non-empty after whitespace stripping
-- `long_answer` must be non-empty after whitespace stripping
+- `question` must be non-empty after whitespace stripping
+- `long_answers` must be non-empty after whitespace stripping
 - Records failing validation are logged and skipped
 
 ---
@@ -75,7 +73,7 @@ Enrichment data attached to a processed document and its chunks.
 | domain | str | non-empty | Auto-classified domain (e.g., "science", "history") |
 | difficulty | str | enum: "easy", "medium", "hard" | Difficulty level based on answer availability |
 | has_short_answer | bool | required | Whether a short answer exists |
-| source_id | str | required | Reference to source dataset record |
+| source_id | str | required, deterministic | Content-derived hash (MD5 of question+answers, 16 hex chars) |
 | language | str | default: "en" | Detected language code |
 
 **Classification rules**:
@@ -182,7 +180,7 @@ RAW → VALIDATED → CHUNKED → ENRICHED → EMBEDDED → INDEXED → SEARCHAB
 
 | State | Description | Stored As |
 |-------|-------------|-----------|
-| RAW | Source dataset record | CSV/JSON file |
+| RAW | Source dataset record | Natural-Questions-Filtered.csv |
 | VALIDATED | Schema-validated, cleaned record | In-memory ProcessedDocument (partial) |
 | CHUNKED | Text split into chunks | In-memory ProcessedDocument (with chunks) |
 | ENRICHED | Metadata classifications added | In-memory ProcessedDocument (complete) |
