@@ -19,11 +19,11 @@
 
 **Purpose**: Add Phase 2 dependencies, config fields, and prompt templates
 
-- [ ] T001 Add Jinja2 dependency to pyproject.toml and install with `pip install -e ".[dev]"`
-- [ ] T002 Add Phase 2 config fields to src/mrag/config.py: query_expansion_enabled (bool, True), query_expansion_top_n (int, 3), conversation_history_max_turns (int, 5), confidence_threshold (float, 0.3), llm_timeout_seconds (int, 30), llm_max_retries (int, 3) with validators
-- [ ] T003 [P] Create Jinja2 Q&A prompt template in prompts/templates/qa_prompt.j2 — accepts query, context_chunks (list with chunk_text, relevance_score, question, answer_short, answer_long), and conversation_history; formats context as numbered passages with citations
-- [ ] T004 [P] Create Jinja2 system prompt template in prompts/templates/system_prompt.j2 — instructs LLM to answer based only on provided context, cite sources, and admit uncertainty when context is insufficient
-- [ ] T005 [P] Create Jinja2 fallback prompt template in prompts/templates/fallback_prompt.j2 — polite response indicating insufficient information to answer the question
+- [x] T001 Add Jinja2 dependency to pyproject.toml and install with `pip install -e ".[dev]"`
+- [x] T002 Add Phase 2 config fields to src/mrag/config.py: query_expansion_enabled (bool, True), query_expansion_top_n (int, 3), conversation_history_max_turns (int, 5), confidence_threshold (float, 0.3), llm_timeout_seconds (int, 30), llm_max_retries (int, 3) with validators
+- [x] T003 [P] Create Jinja2 Q&A prompt template in prompts/templates/qa_prompt.j2 — accepts query, context_chunks (list with chunk_text, relevance_score, question, answer_short, answer_long), and conversation_history; formats context as numbered passages with citations
+- [x] T004 [P] Create Jinja2 system prompt template in prompts/templates/system_prompt.j2 — instructs LLM to answer based only on provided context, cite sources, and admit uncertainty when context is insufficient
+- [x] T005 [P] Create Jinja2 fallback prompt template in prompts/templates/fallback_prompt.j2 — polite response indicating insufficient information to answer the question
 
 **Checkpoint**: `pip install -e ".[dev]"` succeeds. Config loads with new fields. Template files exist.
 
@@ -35,9 +35,9 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 [P] Create query Pydantic models in src/mrag/query/models.py: ConversationTurn (query: str, response: str | None, timestamp: float), ExpandedQuery (original_query, expanded_query, expansion_terms: list[str], prf_doc_ids: list[str]), ProcessedQuery (original_query, normalized_query, expanded_query: str | None, final_query, conversation_history: list[ConversationTurn], query_hash: str, expansion_terms: list[str])
-- [ ] T007 [P] Create generation Pydantic models in src/mrag/generation/models.py: SourceCitation (chunk_id, doc_id, chunk_text, relevance_score: float), ValidationResult (confidence_score, retrieval_score_avg, context_overlap, is_confident: bool, threshold_used: float), GeneratedResponse (query, answer, confidence_score, is_fallback: bool, sources: list[SourceCitation], metrics: RequestMetrics)
-- [ ] T008 [P] Create cache/metrics Pydantic model in src/mrag/cache/models.py: RequestMetrics (preprocessing_time_ms, embedding_time_ms, search_time_ms, llm_time_ms, total_time_ms, cache_hit: bool, cache_type: str | None)
+- [x] T006 [P] Create query Pydantic models in src/mrag/query/models.py: ConversationTurn (query: str, response: str | None, timestamp: float), ExpandedQuery (original_query, expanded_query, expansion_terms: list[str], prf_doc_ids: list[str]), ProcessedQuery (original_query, normalized_query, expanded_query: str | None, final_query, conversation_history: list[ConversationTurn], query_hash: str, expansion_terms: list[str])
+- [x] T007 [P] Create generation Pydantic models in src/mrag/generation/models.py: SourceCitation (chunk_id, doc_id, chunk_text, relevance_score: float), ValidationResult (confidence_score, retrieval_score_avg, context_overlap, is_confident: bool, threshold_used: float), GeneratedResponse (query, answer, confidence_score, is_fallback: bool, sources: list[SourceCitation], metrics: RequestMetrics)
+- [x] T008 [P] Create cache/metrics Pydantic model in src/mrag/cache/models.py: RequestMetrics (preprocessing_time_ms, embedding_time_ms, search_time_ms, llm_time_ms, total_time_ms, cache_hit: bool, cache_type: str | None)
 
 **Checkpoint**: All models importable. `from mrag.query.models import ProcessedQuery` works. `from mrag.generation.models import GeneratedResponse` works. `from mrag.cache.models import RequestMetrics` works.
 
@@ -51,18 +51,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Create unit tests in tests/unit/test_preprocessor.py — test normalize() with: extra whitespace, mixed casing, unicode (Arabic, French, Chinese), excessive punctuation, empty-after-normalization error, NFC normalization
-- [ ] T010 [P] [US1] Create unit tests in tests/unit/test_context_manager.py — test add_turn(), get_contextualized_query() with: empty history, single turn, max_turns sliding window truncation, clear()
-- [ ] T011 [P] [US1] Create unit tests in tests/unit/test_expander.py — test expand() with: short query produces expansion terms, expansion preserves original query terms, disabled expansion returns original, mock retriever for PRF
-- [ ] T012 [P] [US1] Create unit tests in tests/unit/test_query_pipeline.py — test process() end-to-end: normalization + context + expansion chained, expansion disabled path, no context_manager path
+- [x] T009 [P] [US1] Create unit tests in tests/unit/test_preprocessor.py — test normalize() with: extra whitespace, mixed casing, unicode (Arabic, French, Chinese), excessive punctuation, empty-after-normalization error, NFC normalization
+- [x] T010 [P] [US1] Create unit tests in tests/unit/test_context_manager.py — test add_turn(), get_contextualized_query() with: empty history, single turn, max_turns sliding window truncation, clear()
+- [x] T011 [P] [US1] Create unit tests in tests/unit/test_expander.py — test expand() with: short query produces expansion terms, expansion preserves original query terms, disabled expansion returns original, mock retriever for PRF
+- [x] T012 [P] [US1] Create unit tests in tests/unit/test_query_pipeline.py — test process() end-to-end: normalization + context + expansion chained, expansion disabled path, no context_manager path
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Implement QueryPreprocessor in src/mrag/query/preprocessor.py — normalize() method: unicodedata.normalize("NFC"), lowercase, re.sub for whitespace collapse, strip trailing repeated punctuation, raise QueryProcessingError if empty after normalization, structured logging
-- [ ] T014 [P] [US1] Implement ConversationContextManager in src/mrag/query/context_manager.py — __init__(max_turns: int = 5), add_turn(query, response), get_contextualized_query(current_query) prepends "Previous Q: ... A: ..." from sliding window, clear() resets history
-- [ ] T015 [US1] Implement QueryExpander in src/mrag/query/expander.py — __init__(retriever, encoder), expand(query, top_n=3, max_terms=5) performs pseudo-relevance feedback: retrieve top_n docs, extract TF-IDF terms from chunk_text, append to original query weighted by score; depends on T013 for normalized input
-- [ ] T016 [US1] Implement QueryPipeline in src/mrag/query/pipeline.py — __init__(preprocessor, expander, context_manager), process(query, expand=True) chains: normalize → contextualize → expand → compute MD5 query_hash → return ProcessedQuery; structured logging at each stage
-- [ ] T017 [US1] Update src/mrag/query/__init__.py with public exports: QueryPreprocessor, QueryExpander, ConversationContextManager, QueryPipeline, ProcessedQuery, ExpandedQuery, ConversationTurn
+- [x] T013 [P] [US1] Implement QueryPreprocessor in src/mrag/query/preprocessor.py — normalize() method: unicodedata.normalize("NFC"), lowercase, re.sub for whitespace collapse, strip trailing repeated punctuation, raise QueryProcessingError if empty after normalization, structured logging
+- [x] T014 [P] [US1] Implement ConversationContextManager in src/mrag/query/context_manager.py — __init__(max_turns: int = 5), add_turn(query, response), get_contextualized_query(current_query) prepends "Previous Q: ... A: ..." from sliding window, clear() resets history
+- [x] T015 [US1] Implement QueryExpander in src/mrag/query/expander.py — __init__(retriever, encoder), expand(query, top_n=3, max_terms=5) performs pseudo-relevance feedback: retrieve top_n docs, extract TF-IDF terms from chunk_text, append to original query weighted by score; depends on T013 for normalized input
+- [x] T016 [US1] Implement QueryPipeline in src/mrag/query/pipeline.py — __init__(preprocessor, expander, context_manager), process(query, expand=True) chains: normalize → contextualize → expand → compute MD5 query_hash → return ProcessedQuery; structured logging at each stage
+- [x] T017 [US1] Update src/mrag/query/__init__.py with public exports: QueryPreprocessor, QueryExpander, ConversationContextManager, QueryPipeline, ProcessedQuery, ExpandedQuery, ConversationTurn
 
 **Checkpoint**: `pytest tests/unit/test_preprocessor.py tests/unit/test_context_manager.py tests/unit/test_expander.py tests/unit/test_query_pipeline.py -v` all pass. Query "  What  IS   Photosynthesis?? " normalizes to "what is photosynthesis".
 
@@ -76,19 +76,19 @@
 
 ### Tests for User Story 2
 
-- [ ] T018 [P] [US2] Create unit tests in tests/unit/test_llm_client.py — test GroqLLMClient.generate() with: mocked httpx response (success, 429 rate limit, 500 server error, timeout), verify retry logic, verify Authorization header, verify BaseLLMClient ABC contract
-- [ ] T019 [P] [US2] Create unit tests in tests/unit/test_prompt_builder.py — test build_qa_prompt() with: context chunks injected, conversation history included, missing fields handled; test build_system_prompt(); test hot-reload by modifying template file mtime
-- [ ] T020 [P] [US2] Create unit tests in tests/unit/test_validator.py — test validate() with: high retrieval scores + high overlap → high confidence, low scores → low confidence, empty context → near-zero confidence, threshold boundary cases
-- [ ] T021 [P] [US2] Create unit tests in tests/unit/test_fallback.py — test get_fallback_response() returns non-empty string, includes query context
+- [x] T018 [P] [US2] Create unit tests in tests/unit/test_llm_client.py — test GroqLLMClient.generate() with: mocked httpx response (success, 429 rate limit, 500 server error, timeout), verify retry logic, verify Authorization header, verify BaseLLMClient ABC contract
+- [x] T019 [P] [US2] Create unit tests in tests/unit/test_prompt_builder.py — test build_qa_prompt() with: context chunks injected, conversation history included, missing fields handled; test build_system_prompt(); test hot-reload by modifying template file mtime
+- [x] T020 [P] [US2] Create unit tests in tests/unit/test_validator.py — test validate() with: high retrieval scores + high overlap → high confidence, low scores → low confidence, empty context → near-zero confidence, threshold boundary cases
+- [x] T021 [P] [US2] Create unit tests in tests/unit/test_fallback.py — test get_fallback_response() returns non-empty string, includes query context
 
 ### Implementation for User Story 2
 
-- [ ] T022 [P] [US2] Implement BaseLLMClient ABC and GroqLLMClient in src/mrag/generation/llm_client.py — BaseLLMClient with abstract async generate(prompt, system_prompt, temperature, max_tokens) → str; GroqLLMClient uses httpx.AsyncClient, POST to {api_url}/chat/completions, exponential backoff retry (max_retries, timeout from config), structured logging, raises ResponseGenerationError on failure
-- [ ] T023 [P] [US2] Implement PromptBuilder in src/mrag/generation/prompt_builder.py — __init__(templates_dir), Jinja2 Environment with FileSystemLoader, build_qa_prompt(query, context_chunks, conversation_history) and build_system_prompt(); hot-reload via mtime check on template files; structured logging
-- [ ] T024 [US2] Implement ResponseValidator in src/mrag/generation/validator.py — validate(response_text, context_chunks, retrieval_scores) computes confidence = alpha * mean(retrieval_scores) + (1-alpha) * tfidf_overlap(response_text, context); returns ValidationResult; uses sklearn TfidfVectorizer for overlap computation
-- [ ] T025 [US2] Implement FallbackHandler in src/mrag/generation/fallback.py — get_fallback_response(query) returns canned fallback message indicating insufficient information; loads from fallback_prompt.j2 template
-- [ ] T026 [US2] Implement GenerationPipeline in src/mrag/generation/pipeline.py — __init__(llm_client, prompt_builder, validator, fallback_handler), async generate_answer(query, retrieval_results, conversation_history) orchestrates: build prompt → call LLM → validate → return GeneratedResponse or fallback; structured logging; depends on T022-T025
-- [ ] T027 [US2] Update src/mrag/generation/__init__.py with public exports: BaseLLMClient, GroqLLMClient, PromptBuilder, ResponseValidator, FallbackHandler, GenerationPipeline, GeneratedResponse, ValidationResult, SourceCitation
+- [x] T022 [P] [US2] Implement BaseLLMClient ABC and GroqLLMClient in src/mrag/generation/llm_client.py — BaseLLMClient with abstract async generate(prompt, system_prompt, temperature, max_tokens) → str; GroqLLMClient uses httpx.AsyncClient, POST to {api_url}/chat/completions, exponential backoff retry (max_retries, timeout from config), structured logging, raises ResponseGenerationError on failure
+- [x] T023 [P] [US2] Implement PromptBuilder in src/mrag/generation/prompt_builder.py — __init__(templates_dir), Jinja2 Environment with FileSystemLoader, build_qa_prompt(query, context_chunks, conversation_history) and build_system_prompt(); hot-reload via mtime check on template files; structured logging
+- [x] T024 [US2] Implement ResponseValidator in src/mrag/generation/validator.py — validate(response_text, context_chunks, retrieval_scores) computes confidence = alpha * mean(retrieval_scores) + (1-alpha) * tfidf_overlap(response_text, context); returns ValidationResult; uses sklearn TfidfVectorizer for overlap computation
+- [x] T025 [US2] Implement FallbackHandler in src/mrag/generation/fallback.py — get_fallback_response(query) returns canned fallback message indicating insufficient information; loads from fallback_prompt.j2 template
+- [x] T026 [US2] Implement GenerationPipeline in src/mrag/generation/pipeline.py — __init__(llm_client, prompt_builder, validator, fallback_handler), async generate_answer(query, retrieval_results, conversation_history) orchestrates: build prompt → call LLM → validate → return GeneratedResponse or fallback; structured logging; depends on T022-T025
+- [x] T027 [US2] Update src/mrag/generation/__init__.py with public exports: BaseLLMClient, GroqLLMClient, PromptBuilder, ResponseValidator, FallbackHandler, GenerationPipeline, GeneratedResponse, ValidationResult, SourceCitation
 
 **Checkpoint**: `pytest tests/unit/test_llm_client.py tests/unit/test_prompt_builder.py tests/unit/test_validator.py tests/unit/test_fallback.py -v` all pass. Mocked LLM calls produce validated responses. Fallback triggers on low confidence.
 
@@ -102,14 +102,14 @@
 
 ### Tests for User Story 3
 
-- [ ] T028 [P] [US3] Create unit tests in tests/unit/test_embedding_cache.py — test get/put, LRU eviction at max_size, invalidate, clear, stats (hits/misses/evictions)
-- [ ] T029 [P] [US3] Create unit tests in tests/unit/test_response_cache.py — test get/put, TTL expiration (mock time), max_size eviction, invalidate, clear, stats (hits/misses/expirations)
+- [x] T028 [P] [US3] Create unit tests in tests/unit/test_embedding_cache.py — test get/put, LRU eviction at max_size, invalidate, clear, stats (hits/misses/evictions)
+- [x] T029 [P] [US3] Create unit tests in tests/unit/test_response_cache.py — test get/put, TTL expiration (mock time), max_size eviction, invalidate, clear, stats (hits/misses/expirations)
 
 ### Implementation for User Story 3
 
-- [ ] T030 [P] [US3] Implement EmbeddingCache in src/mrag/cache/embedding_cache.py — OrderedDict-based LRU, __init__(max_size), get(query_hash) → np.ndarray | None, put(query_hash, vector), invalidate(query_hash), clear(), size property, stats property tracking hits/misses/evictions; structured logging
-- [ ] T031 [P] [US3] Implement ResponseCache in src/mrag/cache/response_cache.py — dict with (GeneratedResponse, expires_at) tuples, __init__(max_size, default_ttl), get(query_hash) returns None if expired (lazy expiration), put(query_hash, response, ttl), invalidate, clear, size, stats; structured logging
-- [ ] T032 [US3] Update src/mrag/cache/__init__.py with public exports: EmbeddingCache, ResponseCache, RequestMetrics
+- [x] T030 [P] [US3] Implement EmbeddingCache in src/mrag/cache/embedding_cache.py — OrderedDict-based LRU, __init__(max_size), get(query_hash) → np.ndarray | None, put(query_hash, vector), invalidate(query_hash), clear(), size property, stats property tracking hits/misses/evictions; structured logging
+- [x] T031 [P] [US3] Implement ResponseCache in src/mrag/cache/response_cache.py — dict with (GeneratedResponse, expires_at) tuples, __init__(max_size, default_ttl), get(query_hash) returns None if expired (lazy expiration), put(query_hash, response, ttl), invalidate, clear, size, stats; structured logging
+- [x] T032 [US3] Update src/mrag/cache/__init__.py with public exports: EmbeddingCache, ResponseCache, RequestMetrics
 
 **Checkpoint**: `pytest tests/unit/test_embedding_cache.py tests/unit/test_response_cache.py -v` all pass. LRU evicts correctly. TTL expires correctly.
 
@@ -123,12 +123,12 @@
 
 ### Tests for User Story 4
 
-- [ ] T033 [P] [US4] Create unit tests in tests/unit/test_batch_processor.py — test process_batch() with: multiple queries processed, empty list returns empty, single query failure doesn't crash batch (logged), retrieval_only mode returns RetrievalResults; mock retriever and generation pipeline
+- [x] T033 [P] [US4] Create unit tests in tests/unit/test_batch_processor.py — test process_batch() with: multiple queries processed, empty list returns empty, single query failure doesn't crash batch (logged), retrieval_only mode returns RetrievalResults; mock retriever and generation pipeline
 
 ### Implementation for User Story 4
 
-- [ ] T034 [US4] Implement BatchProcessor in src/mrag/cache/batch_processor.py — __init__(retriever, generation_pipeline, batch_size=64), async process_batch(queries, retrieval_only=False): batch-embed all queries via EmbeddingEncoder.encode(), batch-search via FAISS, optionally generate responses (sequential LLM calls); per-query error handling with logging; structured logging for batch progress
-- [ ] T035 [US4] Update src/mrag/cache/__init__.py to add BatchProcessor export
+- [x] T034 [US4] Implement BatchProcessor in src/mrag/cache/batch_processor.py — __init__(retriever, generation_pipeline, batch_size=64), async process_batch(queries, retrieval_only=False): batch-embed all queries via EmbeddingEncoder.encode(), batch-search via FAISS, optionally generate responses (sequential LLM calls); per-query error handling with logging; structured logging for batch progress
+- [x] T035 [US4] Update src/mrag/cache/__init__.py to add BatchProcessor export
 
 **Checkpoint**: `pytest tests/unit/test_batch_processor.py -v` passes. Batch of queries processed with error isolation.
 
@@ -142,12 +142,12 @@
 
 ### Tests for User Story 5
 
-- [ ] T036 [P] [US5] Create unit tests in tests/unit/test_metrics.py — test start_timer/stop_timer returns ms, record(RequestMetrics), get_summary() computes p50/p95/p99 for each field, cache_hit_rate computed correctly, reset() clears, request_count property
+- [x] T036 [P] [US5] Create unit tests in tests/unit/test_metrics.py — test start_timer/stop_timer returns ms, record(RequestMetrics), get_summary() computes p50/p95/p99 for each field, cache_hit_rate computed correctly, reset() clears, request_count property
 
 ### Implementation for User Story 5
 
-- [ ] T037 [US5] Implement MetricsCollector in src/mrag/cache/metrics.py — start_timer(label)/stop_timer(label) using time.perf_counter_ns(), record(RequestMetrics) appends to in-memory list, get_summary() computes p50/p95/p99 via numpy.percentile for each numeric field + cache_hit_rate, reset(), request_count property; structured logging
-- [ ] T038 [US5] Update src/mrag/cache/__init__.py to add MetricsCollector export
+- [x] T037 [US5] Implement MetricsCollector in src/mrag/cache/metrics.py — start_timer(label)/stop_timer(label) using time.perf_counter_ns(), record(RequestMetrics) appends to in-memory list, get_summary() computes p50/p95/p99 via numpy.percentile for each numeric field + cache_hit_rate, reset(), request_count property; structured logging
+- [x] T038 [US5] Update src/mrag/cache/__init__.py to add MetricsCollector export
 
 **Checkpoint**: `pytest tests/unit/test_metrics.py -v` passes. Percentile calculations verified.
 
@@ -157,13 +157,13 @@
 
 **Purpose**: Integration, cache/metrics wiring into existing pipelines, and end-to-end validation
 
-- [ ] T039 Integrate EmbeddingCache into retrieval flow — update src/mrag/retrieval/retriever.py to accept optional EmbeddingCache, check cache before calling encoder.encode_single(), store result on miss
-- [ ] T040 Integrate ResponseCache and MetricsCollector into generation flow — create src/mrag/pipeline.py (top-level orchestrator): accepts QueryPipeline, RetrieverService, GenerationPipeline, EmbeddingCache, ResponseCache, MetricsCollector; wires cache checks and timing around each stage; returns GeneratedResponse
-- [ ] T041 [P] Create integration test in tests/integration/test_query_integration.py — test full query pipeline: raw input → normalized → contextualized → expanded → ProcessedQuery; uses real QueryPreprocessor, mocked retriever for expander
-- [ ] T042 [P] Create integration test in tests/integration/test_generation_integration.py — test generation pipeline end-to-end with mocked LLM client: query + retrieval results → prompt built → LLM called → validated → response or fallback; test template hot-reload
-- [ ] T043 Create end-to-end integration test in tests/integration/test_phase2_e2e.py — test full Phase 2 pipeline: raw query → query processing → retrieval (mocked FAISS) → generation (mocked LLM) → response with metrics; test cache hit on second identical query; test fallback on low-confidence
-- [ ] T044 Run black and ruff on all new files, fix any formatting/linting violations
-- [ ] T045 Run full test suite: `pytest tests/ -v --cov=mrag` — verify all Phase 1 and Phase 2 tests pass with no regressions
+- [x] T039 Integrate EmbeddingCache into retrieval flow — update src/mrag/retrieval/retriever.py to accept optional EmbeddingCache, check cache before calling encoder.encode_single(), store result on miss
+- [x] T040 Integrate ResponseCache and MetricsCollector into generation flow — create src/mrag/pipeline.py (top-level orchestrator): accepts QueryPipeline, RetrieverService, GenerationPipeline, EmbeddingCache, ResponseCache, MetricsCollector; wires cache checks and timing around each stage; returns GeneratedResponse
+- [x] T041 [P] Create integration test in tests/integration/test_query_integration.py — test full query pipeline: raw input → normalized → contextualized → expanded → ProcessedQuery; uses real QueryPreprocessor, mocked retriever for expander
+- [x] T042 [P] Create integration test in tests/integration/test_generation_integration.py — test generation pipeline end-to-end with mocked LLM client: query + retrieval results → prompt built → LLM called → validated → response or fallback; test template hot-reload
+- [x] T043 Create end-to-end integration test in tests/integration/test_phase2_e2e.py — test full Phase 2 pipeline: raw query → query processing → retrieval (mocked FAISS) → generation (mocked LLM) → response with metrics; test cache hit on second identical query; test fallback on low-confidence
+- [x] T044 Run black and ruff on all new files, fix any formatting/linting violations
+- [x] T045 Run full test suite: `pytest tests/ -v --cov=mrag` — verify all Phase 1 and Phase 2 tests pass with no regressions
 
 **Checkpoint**: End of Phase 2. Full pipeline with query processing, generation, caching, and metrics. `make test && make lint` passes. Phase 2 exit criteria met.
 

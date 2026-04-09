@@ -1,0 +1,31 @@
+Answer the following question based ONLY on the provided context passages. If the context does not contain enough information to answer the question, say so explicitly.
+
+## Question
+{{ query }}
+
+{% if conversation_history %}
+## Previous Conversation
+{% for turn in conversation_history %}
+Q: {{ turn.query }}
+{% if turn.response %}A: {{ turn.response }}{% endif %}
+{% endfor %}
+{% endif %}
+
+## Context Passages
+{% for chunk in context_chunks %}
+### Passage {{ loop.index }} (relevance: {{ "%.2f" | format(chunk.relevance_score) }})
+{{ chunk.chunk_text }}
+
+Source question: {{ chunk.question }}
+{% if chunk.answer_short %}Short answer: {{ chunk.answer_short }}{% endif %}
+
+{% endfor %}
+
+## Instructions
+- Answer the question using ONLY information from the context passages above.
+- Cite the passage number(s) you used, e.g., [Passage 1] or [Passage 2, 3].
+- If multiple passages contribute, synthesize them into a coherent answer.
+- If the context does not contain sufficient information, state clearly what is and is not available.
+- Do not add information not present in the passages.
+
+## Answer

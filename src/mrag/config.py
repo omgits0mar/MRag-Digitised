@@ -47,6 +47,16 @@ class Settings(BaseSettings):
     llm_model_name: str = "llama3-8b-8192"
     llm_temperature: float = 0.1
     llm_max_tokens: int = 1024
+    llm_timeout_seconds: int = 30
+    llm_max_retries: int = 3
+
+    # Query Processing
+    query_expansion_enabled: bool = True
+    query_expansion_top_n: int = 3
+    conversation_history_max_turns: int = 5
+
+    # Generation
+    confidence_threshold: float = 0.3
 
     # Database
     database_url: SecretStr = SecretStr("sqlite:///mrag.db")
@@ -72,6 +82,10 @@ class Settings(BaseSettings):
         "chunk_size",
         "embedding_dimension",
         "llm_max_tokens",
+        "llm_timeout_seconds",
+        "llm_max_retries",
+        "query_expansion_top_n",
+        "conversation_history_max_turns",
         "cache_ttl_seconds",
         "cache_max_size",
     )
@@ -100,6 +114,13 @@ class Settings(BaseSettings):
     def validate_temperature(cls, v: float) -> float:
         if not (0.0 <= v <= 2.0):
             raise ValueError("must be >= 0.0 and <= 2.0")
+        return v
+
+    @field_validator("confidence_threshold")
+    @classmethod
+    def validate_confidence_threshold(cls, v: float) -> float:
+        if not (0.0 <= v <= 1.0):
+            raise ValueError("must be >= 0.0 and <= 1.0")
         return v
 
     @field_validator("faiss_index_type")
