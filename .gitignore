@@ -225,3 +225,10 @@ data/cache/
 
 # OS files
 .DS_Store
+
+# Phase 3 — local dev database
+mrag.db
+mrag.db-journal
+
+# Phase 3 — generated evaluation reports
+data/reports/*.html

@@ -59,7 +59,26 @@ class Settings(BaseSettings):
     confidence_threshold: float = 0.3
 
     # Database
-    database_url: SecretStr = SecretStr("sqlite:///mrag.db")
+    database_url: SecretStr = SecretStr("sqlite+aiosqlite:///mrag.db")
+    db_pool_size: int = 5
+    db_pool_max_overflow: int = 10
+    db_echo: bool = False
+
+    # API
+    api_host: str = "0.0.0.0"
+    api_port: int = 8000
+    api_cors_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:3000"]
+    )
+    api_request_timeout_seconds: int = 30
+
+    # Evaluation
+    eval_heldout_path: str = "data/processed/eval.jsonl"
+    eval_baseline_path: str = "data/evaluation/baseline_metrics.json"
+    eval_report_dir: str = "data/reports"
+    eval_k_values: list[int] = Field(default_factory=lambda: [1, 3, 5, 10])
+    eval_benchmark_workload_size: int = 100
+    eval_regression_threshold: float = 0.05
 
     # Cache
     cache_ttl_seconds: int = 3600
@@ -88,6 +107,11 @@ class Settings(BaseSettings):
         "conversation_history_max_turns",
         "cache_ttl_seconds",
         "cache_max_size",
+        "db_pool_size",
+        "db_pool_max_overflow",
+        "api_port",
+        "api_request_timeout_seconds",
+        "eval_benchmark_workload_size",
     )
     @classmethod
     def validate_positive_int(cls, v: int) -> int:
@@ -121,6 +145,13 @@ class Settings(BaseSettings):
     def validate_confidence_threshold(cls, v: float) -> float:
         if not (0.0 <= v <= 1.0):
             raise ValueError("must be >= 0.0 and <= 1.0")
+        return v
+
+    @field_validator("eval_regression_threshold")
+    @classmethod
+    def validate_eval_regression_threshold(cls, v: float) -> float:
+        if not (0.0 < v <= 1.0):
+            raise ValueError("must be > 0.0 and <= 1.0")
         return v
 
     @field_validator("faiss_index_type")

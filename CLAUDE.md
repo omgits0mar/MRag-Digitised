@@ -81,6 +81,8 @@ Branch naming convention: `001-feature-name` or `20260319-143022-feature-name`.
 - FAISS index files (`.faiss`) + JSON metadata files (no database in Phase 1) (002-phase1-rag-pipeline)
 - Python 3.10+ (conda environment `mrag`) + sentence-transformers 4.1.0, faiss-cpu 1.11.0, httpx 0.28.1, Jinja2, Pydantic 2.11.3, structlog 25.2.0, NumPy 2.2.6 (003-phase2-rag-pipeline)
 - FAISS index files (.faiss) + JSON metadata files (no database in Phase 2) (003-phase2-rag-pipeline)
+- Python 3.10+ (conda environment `mrag`) + fastapi 0.115.12, uvicorn 0.34.2, sqlalchemy 2.0.41, aiosqlite (new), scikit-learn 1.6.1, sacrebleu (new), rouge-score (new), matplotlib (new), pydantic 2.11.3, httpx 0.28.1, structlog 25.2.0 — plus existing Phase 1/2 stack (sentence-transformers 4.1.0, faiss-cpu 1.11.0, Jinja2 3.1.6) (004-phase3-rag-bonus)
+- SQLite via `aiosqlite` driver for local dev; MySQL-compatible URL via `aiomysql` (optional, not installed by default) for production — same async SQLAlchemy code path; Phase 1 FAISS index (`.faiss`) + JSON metadata files remain the retrieval store (004-phase3-rag-bonus)
 
 ## Recent Changes
 - 002-phase1-rag-pipeline: Fixed CSV column mapping to match actual Natural-Questions-Filtered.csv schema; load_dataset now returns (records, skipped_count); source_id is deterministic MD5 hash

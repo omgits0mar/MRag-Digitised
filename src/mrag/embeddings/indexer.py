@@ -32,6 +32,11 @@ class FAISSIndexer:
         self._index_type = index_type
         self._index = None
 
+    @property
+    def is_loaded(self) -> bool:
+        """Whether the FAISS index has been loaded into memory."""
+        return self._index is not None
+
     def build_index(self, vectors: np.ndarray) -> None:
         """Build the FAISS index from a matrix of L2-normalized vectors.
 

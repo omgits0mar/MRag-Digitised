@@ -33,7 +33,7 @@ class TestSettingsDefaults:
         assert s.faiss_index_type == "Flat"
         assert s.llm_temperature == 0.1
         assert s.llm_max_tokens == 1024
-        assert s.database_url.get_secret_value() == "sqlite:///mrag.db"
+        assert s.database_url.get_secret_value() == "sqlite+aiosqlite:///mrag.db"
         assert s.cache_ttl_seconds == 3600
         assert s.cache_max_size == 1000
         assert s.data_dir == "data"

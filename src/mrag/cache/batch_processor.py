@@ -8,8 +8,9 @@ already delegates to ``EmbeddingEncoder.encode()``.
 
 from __future__ import annotations
 
-import structlog
 from typing import TYPE_CHECKING
+
+import structlog
 
 from mrag.cache.models import RequestMetrics
 from mrag.retrieval.models import RetrievalRequest, RetrievalResult

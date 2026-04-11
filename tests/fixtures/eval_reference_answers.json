@@ -1,0 +1,65 @@
+{
+  "pairs": [
+    {
+      "prediction": "process by which plants convert light energy into chemical energy",
+      "reference": "process by which plants convert light energy into chemical energy",
+      "expected_bleu": 1.0,
+      "expected_rouge_1": 1.0,
+      "expected_rouge_l": 1.0
+    },
+    {
+      "prediction": "William Shakespeare wrote Romeo and Juliet",
+      "reference": "William Shakespeare",
+      "expected_bleu_gt": 0.3,
+      "expected_rouge_1_gt": 0.5
+    },
+    {
+      "prediction": "The speed of light is very fast",
+      "reference": "approximately 299,792,458 meters per second",
+      "expected_bleu_lt": 0.2,
+      "expected_rouge_1_lt": 0.3
+    },
+    {
+      "prediction": "movement of tectonic plates",
+      "reference": "movement of tectonic plates",
+      "expected_bleu": 1.0,
+      "expected_rouge_l": 1.0
+    },
+    {
+      "prediction": "deoxyribonucleic acid carries genetic information in cells",
+      "reference": "deoxyribonucleic acid, carries genetic information",
+      "expected_bleu_gt": 0.3,
+      "expected_rouge_1_gt": 0.6
+    },
+    {
+      "prediction": "evaporation condensation and precipitation cycle",
+      "reference": "evaporation, condensation, and precipitation",
+      "expected_bleu_gt": 0.2,
+      "expected_rouge_1_gt": 0.5
+    },
+    {
+      "prediction": "Paris",
+      "reference": "Paris",
+      "expected_bleu": 1.0,
+      "expected_rouge_l": 1.0
+    },
+    {
+      "prediction": "mass of objects attracting each other",
+      "reference": "mass of objects attracting each other",
+      "expected_bleu": 1.0,
+      "expected_rouge_l": 1.0
+    },
+    {
+      "prediction": "machines that simulate human intelligence",
+      "reference": "simulation of human intelligence by machines",
+      "expected_bleu_gt": 0.1,
+      "expected_rouge_1_gt": 0.4
+    },
+    {
+      "prediction": "completely unrelated answer about cooking",
+      "reference": "eight",
+      "expected_bleu_lt": 0.05,
+      "expected_rouge_1_lt": 0.1
+    }
+  ]
+}

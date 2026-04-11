@@ -62,6 +62,7 @@ class MRAGPipeline:
         expand: bool = True,
         temperature: float = 0.1,
         max_tokens: int = 1024,
+        conversation_history: list | None = None,
     ) -> GeneratedResponse:
         """Process a user query through the full pipeline.
 
@@ -77,6 +78,8 @@ class MRAGPipeline:
             expand: Whether to run query expansion.
             temperature: LLM sampling temperature.
             max_tokens: Max LLM response tokens.
+            conversation_history: Optional prior turns from DB (overrides
+                any history produced by the query pipeline).
 
         Returns:
             ``GeneratedResponse`` with answer, confidence, sources, and metrics.
@@ -117,10 +120,14 @@ class MRAGPipeline:
 
         # Stage 4: Generation
         self._maybe_start("llm")
+        # Prefer externally-supplied history (e.g. from DB) over query-pipeline history
+        effective_history = (
+            conversation_history or processed.conversation_history or None
+        )
         response = await self._generation_pipeline.generate_answer(
             query=processed.original_query,
             retrieval_results=retrieval_results,
-            conversation_history=processed.conversation_history or None,
+            conversation_history=effective_history,
             temperature=temperature,
             max_tokens=max_tokens,
         )

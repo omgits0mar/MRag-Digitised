@@ -277,4 +277,3 @@ Task: T025-T027 (US6 tests) → T028-T030 (US6 impl)
 - Constitution Article IX: all code must pass black + ruff with zero violations
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
-sss
