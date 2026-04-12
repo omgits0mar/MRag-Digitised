@@ -232,3 +232,11 @@ mrag.db-journal
 
 # Phase 3 — generated evaluation reports
 data/reports/*.html
+
+# Frontend workspace
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/.env
+frontend/.env.local
+frontend/.eslintcache
