@@ -234,20 +234,26 @@ class AnalyticsRepository:
         hits = hits_result.scalar_one()
         cache_hit_rate = hits / total_queries
 
-        # Queries per day using SQLite/MySQL compatible date function
+        # Queries per day — substr(iso_datetime, 1, 10) works for both
+        # SQLite (stores as text) and MySQL (implicit cast to string).
+        day_col = func.substr(
+            QueryRecord.created_at, 1, 10
+        ).label("day")
         day_result = await self._session.execute(
             select(
-                func.strftime("%Y-%m-%d", QueryRecord.created_at).label("day"),
+                day_col,
                 func.count(QueryRecord.id).label("cnt"),
             )
             .where(
                 QueryRecord.created_at >= start,
                 QueryRecord.created_at < end,
             )
-            .group_by("day")
-            .order_by("day")
+            .group_by(day_col)
+            .order_by(day_col)
         )
-        queries_per_day = {row.day: row.cnt for row in day_result.all()}
+        queries_per_day = {
+            str(row.day): row.cnt for row in day_result.all()
+        }
 
         return {
             "total_queries": total_queries,

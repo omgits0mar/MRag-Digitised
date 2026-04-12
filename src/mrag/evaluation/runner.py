@@ -128,7 +128,7 @@ class EvaluationRunner:
             rouge_1=rouge_scores["rouge_1"],
             rouge_2=rouge_scores["rouge_2"],
             rouge_l=rouge_scores["rouge_l"],
-            num_pairs=max(num_pairs, 1),
+            num_pairs=num_pairs,
         )
 
         # 5. Benchmark

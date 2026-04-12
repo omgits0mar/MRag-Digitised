@@ -45,6 +45,7 @@ class GenerationPipeline:
         self._prompt_builder = prompt_builder
         self._validator = validator
         self._fallback_handler = fallback_handler
+        self.last_successful_generation_ts: float | None = None
 
     async def generate_answer(
         self,
@@ -117,6 +118,7 @@ class GenerationPipeline:
                 metrics=RequestMetrics(llm_time_ms=llm_ms),
             )
         llm_ms = (time.perf_counter_ns() - llm_start) / 1_000_000
+        self.last_successful_generation_ts = time.time()
 
         retrieval_scores = [r.relevance_score for r in retrieval_results]
         validation = self._validator.validate(

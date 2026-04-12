@@ -27,18 +27,29 @@ async def health_check(request: Request) -> HealthResponse:
 
     Always returns 200 with status body. Returns within < 1 second.
     """
-    # Vector store check — read cached is_loaded flag
+    # Vector store check — read cached is_loaded flag via public property
     pipeline = request.app.state.pipeline
-    vector_store_status = "not_loaded"
-    try:
-        vector_store_status = (
-            "loaded" if pipeline._retriever._indexer.is_loaded else "not_loaded"
-        )
-    except Exception:
-        vector_store_status = "not_loaded"
+    vector_store_status = "loaded" if pipeline.is_vector_store_loaded else "not_loaded"
 
-    # LLM provider check — if pipeline constructed, LLM client exists
-    llm_status = "reachable"
+    # LLM provider check — reachable if a successful generation occurred
+    # within the configured request timeout window
+    llm_status = "unreachable"
+    try:
+        gen_pipeline = pipeline._generation_pipeline
+        last_ts = gen_pipeline.last_successful_generation_ts
+        if last_ts is not None:
+            from mrag.config import get_settings
+
+            settings = get_settings()
+            age = time.time() - last_ts
+            if age < settings.api_request_timeout_seconds * 10:
+                llm_status = "reachable"
+        else:
+            # No generation yet — treat as reachable if pipeline was built
+            # (the LLM client was successfully constructed at startup)
+            llm_status = "reachable"
+    except Exception:
+        llm_status = "unreachable"
 
     # Database check — SELECT 1
     db_status = "disconnected"

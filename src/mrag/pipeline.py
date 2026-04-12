@@ -56,6 +56,14 @@ class MRAGPipeline:
         self._response_cache = response_cache
         self._metrics = metrics_collector
 
+    @property
+    def is_vector_store_loaded(self) -> bool:
+        """Whether the FAISS index is loaded and ready for search."""
+        try:
+            return self._retriever._indexer.is_loaded
+        except AttributeError:
+            return False
+
     async def ask(
         self,
         query: str,

@@ -35,12 +35,22 @@ async def get_analytics(
     now = datetime.now(timezone.utc)
 
     if end_date:
-        end = datetime.fromisoformat(end_date).replace(tzinfo=timezone.utc)
+        parsed = datetime.fromisoformat(end_date)
+        end = (
+            parsed.astimezone(timezone.utc)
+            if parsed.tzinfo
+            else parsed.replace(tzinfo=timezone.utc)
+        )
     else:
         end = now
 
     if start_date:
-        start = datetime.fromisoformat(start_date).replace(tzinfo=timezone.utc)
+        parsed = datetime.fromisoformat(start_date)
+        start = (
+            parsed.astimezone(timezone.utc)
+            if parsed.tzinfo
+            else parsed.replace(tzinfo=timezone.utc)
+        )
     else:
         start = end - timedelta(days=30)
 

@@ -33,11 +33,11 @@ class QueryRecord(Base):
     total_time_ms: Mapped[float] = mapped_column(Float, nullable=False)
     cache_hit: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     conversation_id: Mapped[str | None] = mapped_column(
-        String(64), nullable=True, index=True
+        String(64), nullable=True
     )
     error_indicator: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, nullable=False, default=_utcnow, index=True
+        DateTime, nullable=False, default=_utcnow
     )
 
     __table_args__ = (
