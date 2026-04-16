@@ -206,5 +206,37 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+# FAISS indices
+*.faiss
+*.index
+
+# Model files
+*.bin
+*.pt
+*.safetensors
+
+# Data caches
+data/cache/
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+
 # OS files
 .DS_Store
+
+# Phase 3 — local dev database
+mrag.db
+mrag.db-journal
+
+# Phase 3 — generated evaluation reports
+data/reports/*.html
+
+# Frontend workspace
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/.env
+frontend/.env.local
+frontend/.eslintcache

@@ -1,0 +1,2 @@
+  - After accepting the plan, /speckit.specify "Phase 4 Chat UI Core — chat window, streaming responses, source citations, 
+  token/latency display, conversation switching, error handling" to create the next feature branch.

@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 42 67% 97%;
+  --foreground: 215 45% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 215 45% 13%;
+  --border: 208 32% 84%;
+  --input: 208 32% 84%;
+  --ring: 25 84% 42%;
+  --primary: 25 84% 42%;
+  --primary-foreground: 43 100% 97%;
+  --muted: 42 38% 92%;
+  --muted-foreground: 210 20% 34%;
+  --accent: 195 43% 35%;
+  --accent-foreground: 42 67% 97%;
+  --surface-elevated: 0 0% 100%;
+  --surface-shadow: 216 48% 12%;
+  font-family:
+    "IBM Plex Sans",
+    "Segoe UI",
+    sans-serif;
+  color: hsl(var(--foreground));
+  background:
+    radial-gradient(circle at top, rgba(208, 116, 27, 0.14), transparent 32%),
+    linear-gradient(180deg, #fcf7ee 0%, #f1efe9 100%);
+}
+
+.dark {
+  --background: 216 35% 12%;
+  --foreground: 43 67% 96%;
+  --card: 216 31% 15%;
+  --card-foreground: 43 67% 96%;
+  --border: 217 18% 28%;
+  --input: 217 18% 28%;
+  --ring: 25 84% 52%;
+  --primary: 25 84% 52%;
+  --primary-foreground: 215 45% 13%;
+  --muted: 216 23% 20%;
+  --muted-foreground: 215 12% 74%;
+  --accent: 191 45% 44%;
+  --accent-foreground: 215 45% 13%;
+  --surface-elevated: 216 28% 18%;
+  --surface-shadow: 216 64% 4%;
+  background:
+    radial-gradient(circle at top, rgba(57, 184, 214, 0.18), transparent 34%),
+    linear-gradient(180deg, #111c2b 0%, #0f1724 100%);
+}
+
+html {
+  color-scheme: light;
+}
+
+.dark html,
+html.dark {
+  color-scheme: dark;
+}
+
+* {
+  border-color: hsl(var(--border));
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: hsl(var(--foreground));
+  background: transparent;
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1,
+    "salt" 1;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button,
+a,
+input,
+select {
+  outline-color: hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.22);
+}
