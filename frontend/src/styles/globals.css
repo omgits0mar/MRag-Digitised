@@ -53,7 +53,6 @@ html {
   color-scheme: light;
 }
 
-.dark html,
 html.dark {
   color-scheme: dark;
 }
@@ -82,11 +81,53 @@ body {
 button,
 a,
 input,
-select {
+select,
+textarea {
   outline-color: hsl(var(--ring));
   outline-offset: 2px;
 }
 
 ::selection {
   background: hsl(var(--primary) / 0.22);
+}
+
+.chat-workspace {
+  align-items: start;
+}
+
+.chat-transcript {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.chat-transcript::-webkit-scrollbar {
+  width: 10px;
+}
+
+.chat-transcript::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.35);
+}
+
+.chat-sources {
+  position: sticky;
+  top: 6rem;
+}
+
+[dir="rtl"] ol,
+[dir="rtl"] ul {
+  margin-left: 0;
+  margin-right: 1.25rem;
+}
+
+[dir="rtl"] pre,
+[dir="rtl"] code {
+  direction: ltr;
+  text-align: left;
+}
+
+@media (max-width: 1279px) {
+  .chat-sources {
+    position: static;
+  }
 }

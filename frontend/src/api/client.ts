@@ -153,7 +153,26 @@ function registerInterceptors(): void {
 
       return response;
     },
-    (error: unknown) => Promise.reject(toApiError(error)),
+    (error: unknown) => {
+      const apiError = toApiError(error);
+      const instrumentedConfig =
+        error instanceof AxiosError
+          ? (error.config as InstrumentedRequestConfig | undefined)
+          : undefined;
+      const durationMs =
+        instrumentedConfig?.metadata === undefined
+          ? undefined
+          : Date.now() - instrumentedConfig.metadata.startedAt;
+
+      logger.warn("api.response.error", {
+        correlationId: instrumentedConfig?.metadata?.correlationId,
+        durationMs,
+        kind: apiError.kind,
+        url: instrumentedConfig?.url,
+      });
+
+      return Promise.reject(apiError);
+    },
   );
 
   interceptorsRegistered = true;

@@ -58,6 +58,12 @@ module.exports = {
       },
     },
     {
+      files: ["src/api/streaming.ts"],
+      rules: {
+        "no-restricted-globals": "off",
+      },
+    },
+    {
       files: ["tests/**/*.ts", "tests/**/*.tsx", "playwright.config.ts"],
       rules: {
         "no-restricted-imports": "off",

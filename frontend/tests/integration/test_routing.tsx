@@ -33,7 +33,7 @@ describe("App routing", () => {
     render(<RouterProvider router={historyRouter} />);
     expect(
       await screen.findByRole("heading", {
-        name: /conversation history is wired to shared state/i,
+        name: /review saved transcripts/i,
       }),
     ).toBeInTheDocument();
     expect(historyRouter.state.location.pathname).toBe("/history");

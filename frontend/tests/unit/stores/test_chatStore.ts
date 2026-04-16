@@ -1,76 +1,106 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import { logger } from "@/lib/logger";
 import { resetChatStore, useChatStore } from "@/stores/chatStore";
 
 describe("chatStore", () => {
   beforeEach(() => {
     resetChatStore();
-    vi.restoreAllMocks();
   });
 
-  it("starts with the documented session defaults", () => {
+  it("starts with the documented transcript defaults", () => {
     expect(useChatStore.getState()).toMatchObject({
       activeConversationId: null,
+      focusedAssistantMessageId: null,
+      inFlightRequest: null,
       isStreaming: false,
       lastError: null,
       messages: [],
     });
   });
 
-  it("tracks messages, conversation selection, and preserves the active conversation when cleared", () => {
-    useChatStore.getState().setActiveConversation("conv-1");
-    useChatStore.getState().addMessage({
-      content: "Hello",
-      conversation_id: "conv-1",
-      created_at: "2026-04-12T10:00:00Z",
-      id: "msg-1",
-      role: "assistant",
+  it("tracks message focus and lifecycle-aware in-flight request state", () => {
+    useChatStore.getState().appendMessages([
+      {
+        content: "Question",
+        conversationId: null,
+        createdAt: "2026-04-15T08:00:00Z",
+        id: "user-1",
+        role: "user",
+        status: "complete",
+      },
+      {
+        content: "",
+        conversationId: null,
+        createdAt: "2026-04-15T08:00:00Z",
+        id: "assistant-1",
+        role: "assistant",
+        status: "thinking",
+      },
+    ]);
+    useChatStore.getState().beginRequest({
+      assistantMessageId: "assistant-1",
+      conversationId: null,
+      mode: "stream",
+      requestId: "req-1",
+      submittedAt: "2026-04-15T08:00:00Z",
+      userMessageId: "user-1",
     });
-    useChatStore.getState().appendToLastAssistant(" world");
-    useChatStore.getState().setStreaming(true);
+    useChatStore.getState().updateInFlightRequest({
+      firstChunkAt: "2026-04-15T08:00:01Z",
+    });
+
+    expect(useChatStore.getState()).toMatchObject({
+      focusedAssistantMessageId: "assistant-1",
+      inFlightRequest: {
+        assistantMessageId: "assistant-1",
+        firstChunkAt: "2026-04-15T08:00:01Z",
+      },
+      isStreaming: true,
+    });
+
+    useChatStore.getState().finishRequest();
+    expect(useChatStore.getState()).toMatchObject({
+      inFlightRequest: null,
+      isStreaming: false,
+    });
+  });
+
+  it("hydrates a saved conversation and resets to a new chat cleanly", () => {
+    useChatStore.getState().hydrateConversation({
+      createdAt: "2026-04-10T08:30:00Z",
+      id: "conv-1",
+      messageCount: 2,
+      messages: [
+        {
+          content: "Saved answer",
+          conversationId: "conv-1",
+          createdAt: "2026-04-10T08:31:00Z",
+          id: "assistant-1",
+          role: "assistant",
+          status: "complete",
+        },
+      ],
+      status: "loaded",
+      title: "Saved conversation",
+      updatedAt: "2026-04-10T08:31:00Z",
+    });
 
     expect(useChatStore.getState()).toMatchObject({
       activeConversationId: "conv-1",
-      isStreaming: true,
+      focusedAssistantMessageId: "assistant-1",
       messages: [
         {
-          content: "Hello world",
-          id: "msg-1",
-          role: "assistant",
+          id: "assistant-1",
         },
       ],
     });
 
-    useChatStore.getState().clear();
+    useChatStore.getState().startNewConversation();
 
     expect(useChatStore.getState()).toMatchObject({
-      activeConversationId: "conv-1",
-      isStreaming: false,
-      lastError: null,
+      activeConversationId: null,
+      focusedAssistantMessageId: null,
       messages: [],
     });
   });
-
-  it("no-ops and logs a warning when streaming chunks target a non-assistant message", () => {
-    const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => undefined);
-
-    useChatStore.getState().addMessage({
-      content: "Question",
-      conversation_id: "conv-2",
-      created_at: "2026-04-12T10:05:00Z",
-      id: "msg-2",
-      role: "user",
-    });
-    useChatStore.getState().appendToLastAssistant(" ignored");
-
-    expect(useChatStore.getState().messages[0]?.content).toBe("Question");
-    expect(warnSpy).toHaveBeenCalledWith(
-      "chat.append.invalid",
-      expect.objectContaining({
-        messageCount: 1,
-      }),
-    );
-  });
 });
-

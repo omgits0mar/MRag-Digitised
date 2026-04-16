@@ -2,10 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/api/endpoints", () => ({
   deleteConversation: vi.fn(),
+  getConversation: vi.fn(),
   listConversations: vi.fn(),
 }));
 
-import { deleteConversation, listConversations } from "@/api/endpoints";
+import {
+  deleteConversation,
+  getConversation,
+  listConversations,
+} from "@/api/endpoints";
 import { logger } from "@/lib/logger";
 import {
   resetConversationStore,
@@ -13,6 +18,7 @@ import {
 } from "@/stores/conversationStore";
 
 const mockedDeleteConversation = vi.mocked(deleteConversation);
+const mockedGetConversation = vi.mocked(getConversation);
 const mockedListConversations = vi.mocked(listConversations);
 
 describe("conversationStore", () => {
@@ -21,7 +27,7 @@ describe("conversationStore", () => {
     vi.clearAllMocks();
   });
 
-  it("loads conversations and clears a stale active selection", async () => {
+  it("loads summaries and clears stale active selections", async () => {
     const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => undefined);
 
     mockedListConversations.mockResolvedValueOnce({
@@ -46,6 +52,7 @@ describe("conversationStore", () => {
         {
           id: "conv-1",
           title: "One",
+          updatedAt: "2026-04-12T09:30:00Z",
         },
       ],
       isLoading: false,
@@ -59,21 +66,57 @@ describe("conversationStore", () => {
     );
   });
 
-  it("restores optimistic deletes on failure", async () => {
-    const existingConversations = [
-      {
+  it("hydrates conversation detail on demand", async () => {
+    mockedGetConversation.mockResolvedValueOnce({
+      kind: "ok",
+      data: {
         created_at: "2026-04-12T09:00:00Z",
         id: "conv-1",
         message_count: 2,
+        messages: [
+          {
+            content: "Hello",
+            created_at: "2026-04-12T09:00:00Z",
+            id: "msg-1",
+            role: "user",
+          },
+          {
+            content: "Hi",
+            created_at: "2026-04-12T09:01:00Z",
+            id: "msg-2",
+            role: "assistant",
+          },
+        ],
         title: "One",
         updated_at: "2026-04-12T09:30:00Z",
       },
+    });
+
+    const conversation = await useConversationStore.getState().loadConversation("conv-1");
+
+    expect(conversation?.id).toBe("conv-1");
+    expect(conversation?.status).toBe("loaded");
+    expect(conversation?.messages?.[0]).toMatchObject({
+      conversationId: "conv-1",
+      id: "msg-1",
+    });
+  });
+
+  it("restores optimistic deletes on failure", async () => {
+    const existingConversations = [
       {
-        created_at: "2026-04-12T10:00:00Z",
+        createdAt: "2026-04-12T09:00:00Z",
+        id: "conv-1",
+        messageCount: 2,
+        title: "One",
+        updatedAt: "2026-04-12T09:30:00Z",
+      },
+      {
+        createdAt: "2026-04-12T10:00:00Z",
         id: "conv-2",
-        message_count: 3,
+        messageCount: 3,
         title: "Two",
-        updated_at: "2026-04-12T10:30:00Z",
+        updatedAt: "2026-04-12T10:30:00Z",
       },
     ];
 
@@ -104,4 +147,3 @@ describe("conversationStore", () => {
     });
   });
 });
-

@@ -1,0 +1,55 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mrag-backend:latest
+    container_name: mrag-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Override any path-style settings so they resolve inside the container,
+      # regardless of what the checked-in .env.example ships with.
+      DATA_DIR: /data
+      UPLOAD_DIR: /data/uploads
+      DATABASE_URL: sqlite+aiosqlite:////data/db/mrag.db
+      HF_HOME: /hf-cache
+      TRANSFORMERS_CACHE: /hf-cache
+      API_CORS_ORIGINS: '["http://localhost:3000"]'
+    volumes:
+      - mrag-data:/data
+      - mrag-hf:/hf-cache
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: mrag-frontend:latest
+    container_name: mrag-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  mrag-data:
+    name: mrag-data
+  mrag-hf:
+    name: mrag-hf

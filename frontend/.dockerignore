@@ -1,0 +1,30 @@
+node_modules
+dist
+coverage
+.vite
+
+# Tests — type-check + build already covered in CI; avoid shipping fixtures.
+tests
+playwright-report
+test-results
+.nyc_output
+
+# Editor / OS junk
+.vscode
+.idea
+.DS_Store
+
+# Local env files — build stage provides explicit VITE_* values.
+.env
+.env.*
+
+# Docker scaffolding
+Dockerfile
+.dockerignore
+
+# Version control
+.git
+.gitignore
+
+# Docs not needed at build time
+*.md

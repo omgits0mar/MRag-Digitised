@@ -36,21 +36,30 @@ export function AppShell(): JSX.Element {
     }
   }, [isMobile, location.pathname]);
 
+  const sidebarId = "app-shell-sidebar";
+  const dismissSidebar = (): void => {
+    setIsSidebarOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-transparent text-slate-950 dark:text-slate-50">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
         <Sidebar
           mobile={isMobile}
           open={isSidebarOpen}
+          id={sidebarId}
           onNavigate={() => {
             if (isMobile) {
               setIsSidebarOpen(false);
             }
           }}
+          onDismiss={dismissSidebar}
         />
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Header
             showMenuButton={isMobile}
+            menuExpanded={isMobile && isSidebarOpen}
+            menuControlsId={sidebarId}
             healthLabel={healthLabel}
             onMenuToggle={() => {
               setIsSidebarOpen((current) => !current);

@@ -19,6 +19,7 @@ from mrag.api.routes.analytics import router as analytics_router
 from mrag.api.routes.ask import router as ask_router
 from mrag.api.routes.evaluate import router as evaluate_router
 from mrag.api.routes.health import router as health_router
+from mrag.api.routes.upload import router as upload_router
 from mrag.cache.embedding_cache import EmbeddingCache
 from mrag.cache.metrics import MetricsCollector
 from mrag.cache.response_cache import ResponseCache
@@ -34,17 +35,19 @@ from mrag.generation.llm_client import GroqLLMClient
 from mrag.generation.pipeline import GenerationPipeline
 from mrag.generation.prompt_builder import PromptBuilder
 from mrag.generation.validator import ResponseValidator
+from mrag.ingestion import UploadService
 from mrag.pipeline import MRAGPipeline
 from mrag.query.pipeline import QueryPipeline
 
 logger = structlog.get_logger(__name__)
 
 
-async def build_mrag_pipeline() -> MRAGPipeline:
-    """Construct the full Phase 2 MRAGPipeline from settings.
+async def build_mrag_pipeline() -> tuple[MRAGPipeline, UploadService]:
+    """Construct the MRAGPipeline and the runtime UploadService.
 
-    Loads FAISS index, metadata store, encoder, and wires together
-    all pipeline components.
+    Loads FAISS index, metadata store, encoder, and wires together all
+    pipeline components. Returns both so the upload service can share
+    the same encoder, indexer, and metadata store instances.
     """
     settings = get_settings()
 
@@ -57,6 +60,7 @@ async def build_mrag_pipeline() -> MRAGPipeline:
 
     # Load existing index artifacts from Phase 1
     import os
+    from pathlib import Path as _Path
 
     index_path = os.path.join(settings.data_dir, "processed", "embeddings.faiss")
     metadata_path = os.path.join(
@@ -125,7 +129,7 @@ async def build_mrag_pipeline() -> MRAGPipeline:
     # Metrics
     metrics_collector = MetricsCollector()
 
-    return MRAGPipeline(
+    pipeline = MRAGPipeline(
         query_pipeline=query_pipeline,
         retriever=retriever,
         generation_pipeline=generation_pipeline,
@@ -133,6 +137,22 @@ async def build_mrag_pipeline() -> MRAGPipeline:
         response_cache=response_cache,
         metrics_collector=metrics_collector,
     )
+
+    upload_service = UploadService(
+        encoder=encoder,
+        indexer=indexer,
+        metadata_store=metadata_store,
+        upload_dir=_Path(settings.upload_dir),
+        index_path=_Path(index_path),
+        metadata_path=_Path(metadata_path),
+        max_bytes=settings.upload_max_bytes,
+        allowed_extensions=settings.upload_allowed_extensions,
+        chunk_size=settings.chunk_size,
+        chunk_overlap=settings.chunk_overlap,
+        response_cache=response_cache,
+    )
+
+    return pipeline, upload_service
 
 
 @asynccontextmanager
@@ -142,8 +162,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     # Build pipeline
     logger.info("lifespan_startup_begin")
-    pipeline = await build_mrag_pipeline()
+    pipeline, upload_service = await build_mrag_pipeline()
     app.state.pipeline = pipeline
+    app.state.upload_service = upload_service
 
     # Database
     db_url = settings.database_url.get_secret_value()
@@ -199,5 +220,6 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(evaluate_router)
     app.include_router(analytics_router)
+    app.include_router(upload_router)
 
     return app
