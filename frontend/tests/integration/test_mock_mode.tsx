@@ -51,13 +51,16 @@ describe("mock mode", () => {
     expect(await screen.findByText(/backend healthy/i)).toBeInTheDocument();
     expect(
       await screen.findByRole("heading", {
-        name: /conversation history is wired to shared state/i,
+        name: /review saved transcripts/i,
       }),
     ).toBeInTheDocument();
     expect(await screen.findByText(/arabic policy translation review/i)).toBeInTheDocument();
 
-    const openButtons = await screen.findAllByRole("button", { name: "Open" });
-    await user.click(openButtons[0]!);
+    await user.click(
+      screen.getByRole("button", {
+        name: /arabic policy translation review.*messages/i,
+      }),
+    );
 
     expect(useConversationStore.getState().activeId).toBe("conv-1");
 
@@ -79,5 +82,6 @@ describe("mock mode", () => {
         name: /ask multilingual questions with confidence/i,
       }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/recent conversations/i)).toBeInTheDocument();
   });
 });

@@ -16,10 +16,16 @@ import type {
   ModelInfo,
   QuestionRequest,
   QuestionResponse,
+  UploadResponse,
+  UploadStatusResponse,
 } from "./types";
 
 interface RequestOptions {
   signal?: AbortSignal;
+}
+
+interface UploadRequestOptions extends RequestOptions {
+  onProgress?: (percent: number) => void;
 }
 
 function toRequestConfig(opts?: RequestOptions): RequestOptions | undefined {
@@ -157,6 +163,50 @@ export function runEvaluation(
 export function listModels(opts?: RequestOptions): Promise<ApiResult<ModelInfo[]>> {
   return runRequest<ModelInfo[]>(async () => {
     const response = await getApiClient().get<ModelInfo[]>("/models", toRequestConfig(opts));
+
+    return response.data;
+  });
+}
+
+export function uploadFile(
+  file: File,
+  opts?: UploadRequestOptions,
+): Promise<ApiResult<UploadResponse>> {
+  return runRequest<UploadResponse>(async () => {
+    const form = new FormData();
+    form.append("file", file, file.name);
+
+    const onProgress = opts?.onProgress;
+    const response = await getApiClient().post<UploadResponse>("/upload", form, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      ...(opts?.signal === undefined ? {} : { signal: opts.signal }),
+      ...(onProgress === undefined
+        ? {}
+        : {
+            onUploadProgress: (event) => {
+              if (event.total === undefined || event.total === 0) {
+                return;
+              }
+              const percent = Math.round((event.loaded / event.total) * 100);
+              onProgress(percent);
+            },
+          }),
+    });
+
+    return response.data;
+  });
+}
+
+export function getUploadStatus(
+  opts?: RequestOptions,
+): Promise<ApiResult<UploadStatusResponse>> {
+  return runRequest<UploadStatusResponse>(async () => {
+    const response = await getApiClient().get<UploadStatusResponse>(
+      "/upload/status",
+      toRequestConfig(opts),
+    );
 
     return response.data;
   });

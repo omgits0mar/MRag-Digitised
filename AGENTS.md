@@ -1,6 +1,6 @@
 # MRAG Development Guidelines
 
-Initialized from `CLAUDE.md`, the project constitution, and the current repository state. Last updated: 2026-04-12
+Initialized from `CLAUDE.md`, the project constitution, and the current repository state. Last updated: 2026-04-14
 
 ## Project Overview
 
@@ -30,6 +30,8 @@ Initialized from `CLAUDE.md`, the project constitution, and the current reposito
 - The active spec branch is `005-frontend-foundation`, but the `frontend/` app has not been scaffolded in this repository yet.
 
 ## Active Technologies
+- TypeScript 5.8.x (strict mode, `noUncheckedIndexedAccess: true`), React 18.3.x, Node.js 20 LTS for tooling + Existing frontend stack from Feature 005 (`react`, `react-router-dom`, `zustand`, `axios`, `tailwindcss`, `msw`, `vitest`, `@testing-library/react`, `@axe-core/react`) plus `react-markdown`, `remark-gfm`, and `unist-util-visit` for markdown/citation rendering (006-chat-ui-core)
+- Browser `localStorage` remains limited to the existing settings store; chat transcript state, focused message state, and in-flight request state remain in-memory and are rehydrated from backend or MSW responses (006-chat-ui-core)
 
 - Python 3.10+
 - FastAPI, SQLAlchemy, Pydantic v2, structlog
@@ -114,12 +116,10 @@ Note: no `frontend/` package or Node-based command set exists in the repository 
 - If project instructions conflict, follow this order: constitution -> direct user request -> repo reality -> `CLAUDE.md` -> feature artifacts.
 
 ## Recent Changes
+- 006-chat-ui-core: Added TypeScript 5.8.x (strict mode, `noUncheckedIndexedAccess: true`), React 18.3.x, Node.js 20 LTS for tooling + Existing frontend stack from Feature 005 (`react`, `react-router-dom`, `zustand`, `axios`, `tailwindcss`, `msw`, `vitest`, `@testing-library/react`, `@axe-core/react`) plus `react-markdown`, `remark-gfm`, and `unist-util-visit` for markdown/citation rendering
 
 - `001-project-foundation`: established config, logging, exceptions, testing, and Python project scaffolding
 - `002-phase1-rag-pipeline`: added dataset processing, multilingual embeddings, FAISS indexing, retrieval, and fixed CSV column mapping to match the actual dataset
-- `003-phase2-rag-pipeline`: added query enhancement, LLM generation pipeline, prompt templates, caching, and performance-oriented modules
-- `004-phase3-rag-bonus`: added FastAPI routes, SQLAlchemy persistence, analytics, and evaluation metrics/reporting
-- `005-frontend-foundation`: specification and plan are present; frontend implementation is not yet scaffolded
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

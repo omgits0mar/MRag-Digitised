@@ -1,7 +1,31 @@
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 import { describe, expect, it } from "vitest";
 
 import { createRequestHandle, toApiError } from "@/api/client";
+
+function collectSourceFiles(rootDir: string): string[] {
+  const entries = readdirSync(rootDir, {
+    withFileTypes: true,
+  });
+
+  return entries.flatMap((entry) => {
+    const absolutePath = path.join(rootDir, entry.name);
+
+    if (entry.isDirectory()) {
+      return collectSourceFiles(absolutePath);
+    }
+
+    if (!absolutePath.endsWith(".ts") && !absolutePath.endsWith(".tsx")) {
+      return [];
+    }
+
+    return [absolutePath];
+  });
+}
 
 describe("api client error normalization", () => {
   it("maps timeout failures to timeout errors", () => {
@@ -59,5 +83,18 @@ describe("api client error normalization", () => {
     expect(handle.signal.aborted).toBe(false);
     handle.cancel();
     expect(handle.signal.aborted).toBe(true);
+  });
+
+  it("keeps fetch isolated to the streaming transport seam", () => {
+    const currentDir = path.dirname(fileURLToPath(import.meta.url));
+    const srcDir = path.resolve(currentDir, "../../../src");
+    const files = collectSourceFiles(srcDir);
+    const filesUsingFetch = files.filter((filePath) =>
+      readFileSync(filePath, "utf8").includes("fetch("),
+    );
+
+    expect(filesUsingFetch).toEqual([
+      path.resolve(srcDir, "api/streaming.ts"),
+    ]);
   });
 });

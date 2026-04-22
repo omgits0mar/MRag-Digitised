@@ -1,0 +1,70 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Python artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.egg-info
+.eggs
+build
+dist
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+htmlcov
+
+# Virtual envs
+.venv
+venv
+env
+
+# Frontend (built separately)
+frontend
+
+# Local dev data — index, DB, uploads must come from the live volume
+data
+*.faiss
+*.json
+!pyproject.toml
+*.db
+*.sqlite
+*.sqlite3
+uploads
+
+# Dataset and large fixtures that should not be baked in
+Natural-Questions-Filtered.csv
+*.csv
+*.pdf
+*.docx
+
+# Tests and specs aren't needed in the runtime image
+tests
+specs
+docs
+
+# Editor and OS junk
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+
+# Docker artifacts
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Docs unrelated to runtime
+AGENTS.md
+CLAUDE.md
+*.md
+!README.md

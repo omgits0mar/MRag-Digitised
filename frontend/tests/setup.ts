@@ -5,6 +5,7 @@ import { afterAll, afterEach, beforeAll, vi } from "vitest";
 
 import { setConfigForTests } from "@/config";
 import { handlers } from "@/mocks/handlers";
+import { resetMockData } from "@/mocks/handlers";
 
 export const server = setupServer(...handlers);
 
@@ -86,6 +87,13 @@ if (typeof window !== "undefined" && window.scrollTo === undefined) {
   });
 }
 
+if (typeof HTMLElement !== "undefined" && HTMLElement.prototype.scrollIntoView === undefined) {
+  Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+    configurable: true,
+    value: vi.fn(),
+  });
+}
+
 if (globalThis.crypto === undefined || globalThis.crypto.randomUUID === undefined) {
   Object.defineProperty(globalThis, "crypto", {
     configurable: true,
@@ -111,6 +119,7 @@ beforeAll(() => {
 
 afterEach(() => {
   globalThis.localStorage.clear();
+  resetMockData();
   server.resetHandlers();
   cleanup();
 });

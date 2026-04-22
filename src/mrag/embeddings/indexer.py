@@ -38,13 +38,42 @@ class FAISSIndexer:
         return self._index is not None
 
     def build_index(self, vectors: np.ndarray) -> None:
-        """Build the FAISS index from a matrix of L2-normalized vectors.
+        """Build (or rebuild) the FAISS index from a matrix of L2-normalized vectors.
+
+        Replaces any existing in-memory index.
 
         Args:
             vectors: np.ndarray of shape (n, dimension), L2-normalized.
 
         Raises:
             RetrievalError: If dimension mismatch or build fails.
+        """
+        import faiss
+
+        self._index = faiss.IndexFlatIP(self._dimension)
+        try:
+            self.add_vectors(vectors)
+            logger.info(
+                "index_built",
+                num_vectors=vectors.shape[0],
+                dimension=self._dimension,
+            )
+        except Exception as exc:
+            raise RetrievalError(
+                f"Failed to build index: {exc}",
+            ) from exc
+
+    def add_vectors(self, vectors: np.ndarray) -> list[int]:
+        """Append L2-normalized vectors to the index, creating it if empty.
+
+        Args:
+            vectors: np.ndarray of shape (n, dimension), L2-normalized.
+
+        Returns:
+            Assigned FAISS integer IDs for the new vectors.
+
+        Raises:
+            RetrievalError: If dimension mismatch or add fails.
         """
         import faiss
 
@@ -58,18 +87,24 @@ class FAISSIndexer:
                 },
             )
 
-        try:
+        if self._index is None:
             self._index = faiss.IndexFlatIP(self._dimension)
+
+        prev_ntotal = self._index.ntotal
+        try:
             self._index.add(vectors.astype(np.float32))
-            logger.info(
-                "index_built",
-                num_vectors=vectors.shape[0],
-                dimension=self._dimension,
-            )
         except Exception as exc:
             raise RetrievalError(
-                f"Failed to build index: {exc}",
+                f"Failed to add vectors: {exc}",
             ) from exc
+
+        assigned_ids = list(range(prev_ntotal, self._index.ntotal))
+        logger.info(
+            "vectors_added",
+            count=len(assigned_ids),
+            total=self._index.ntotal,
+        )
+        return assigned_ids
 
     def search(
         self, query_vector: np.ndarray, top_k: int = 5

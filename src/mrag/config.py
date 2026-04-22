@@ -88,6 +88,13 @@ class Settings(BaseSettings):
     data_dir: str = "data"
     prompts_dir: str = "prompts/templates"
 
+    # File upload ingestion
+    upload_dir: str = "data/uploads"
+    upload_max_bytes: int = 100 * 1024 * 1024
+    upload_allowed_extensions: list[str] = Field(
+        default_factory=lambda: ["csv", "txt", "pdf", "md", "docx"]
+    )
+
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, v: str) -> str:
@@ -112,12 +119,21 @@ class Settings(BaseSettings):
         "api_port",
         "api_request_timeout_seconds",
         "eval_benchmark_workload_size",
+        "upload_max_bytes",
     )
     @classmethod
     def validate_positive_int(cls, v: int) -> int:
         if v <= 0:
             raise ValueError("must be > 0")
         return v
+
+    @field_validator("upload_allowed_extensions")
+    @classmethod
+    def normalize_upload_extensions(cls, v: list[str]) -> list[str]:
+        normalized = [ext.strip().lstrip(".").lower() for ext in v]
+        if not all(normalized):
+            raise ValueError("upload_allowed_extensions entries must be non-empty")
+        return normalized
 
     @field_validator("top_k")
     @classmethod

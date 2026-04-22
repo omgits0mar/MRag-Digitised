@@ -1,79 +1,145 @@
 import { create } from "zustand";
 
-import type { ApiError, SourceResponse } from "@/api/types";
-import { logger } from "@/lib/logger";
-
-export interface ChatMessage {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  created_at: string;
-  conversation_id: string | null;
-  sources?: SourceResponse[];
-  confidence_score?: number;
-  response_time_ms?: number;
-  is_fallback?: boolean;
-  isStreaming?: boolean;
-  error?: string;
-}
+import type {
+  ApiError,
+  ChatMessage,
+  ConversationRecord,
+  InFlightRequest,
+} from "@/api/types";
 
 export interface ChatStoreState {
   messages: ChatMessage[];
   activeConversationId: string | null;
+  focusedAssistantMessageId: string | null;
+  inFlightRequest: InFlightRequest | null;
   isStreaming: boolean;
   lastError: ApiError | null;
-  addMessage: (message: ChatMessage) => void;
-  appendToLastAssistant: (chunk: string) => void;
-  setStreaming: (value: boolean) => void;
+  appendMessage: (message: ChatMessage) => void;
+  appendMessages: (messages: ChatMessage[]) => void;
+  updateMessage: (messageId: string, updater: (message: ChatMessage) => ChatMessage) => void;
+  setMessages: (messages: ChatMessage[], conversationId: string | null) => void;
+  hydrateConversation: (conversation: ConversationRecord) => void;
+  setFocusedAssistantMessage: (messageId: string | null) => void;
+  beginRequest: (request: InFlightRequest) => void;
+  updateInFlightRequest: (patch: Partial<InFlightRequest>) => void;
+  finishRequest: () => void;
   setActiveConversation: (id: string | null) => void;
   setError: (error: ApiError | null) => void;
+  startNewConversation: () => void;
   clear: () => void;
 }
 
 const CHAT_STORE_INITIAL_STATE = {
   messages: [],
   activeConversationId: null,
+  focusedAssistantMessageId: null,
+  inFlightRequest: null,
   isStreaming: false,
   lastError: null,
 } satisfies Pick<
   ChatStoreState,
-  "messages" | "activeConversationId" | "isStreaming" | "lastError"
+  | "messages"
+  | "activeConversationId"
+  | "focusedAssistantMessageId"
+  | "inFlightRequest"
+  | "isStreaming"
+  | "lastError"
 >;
 
-export const useChatStore = create<ChatStoreState>()((set, get) => ({
+function getFocusedAssistantId(messages: ChatMessage[]): string | null {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    if (message?.role === "assistant") {
+      return message.id;
+    }
+  }
+
+  return null;
+}
+
+export const useChatStore = create<ChatStoreState>()((set) => ({
   ...CHAT_STORE_INITIAL_STATE,
-  addMessage(message) {
+  appendMessage(message) {
     set((state) => ({
-      activeConversationId: message.conversation_id ?? state.activeConversationId,
+      activeConversationId: message.conversationId ?? state.activeConversationId,
+      focusedAssistantMessageId:
+        message.role === "assistant" ? message.id : state.focusedAssistantMessageId,
       lastError: null,
       messages: [...state.messages, message],
     }));
   },
-  appendToLastAssistant(chunk) {
-    const messages = get().messages;
-    const lastMessage = messages[messages.length - 1];
+  appendMessages(messages) {
+    set((state) => {
+      const nextMessages = [...state.messages, ...messages];
+      const lastConversationId =
+        [...messages].reverse().find((message) => message.conversationId !== null)?.conversationId ??
+        state.activeConversationId;
 
-    if (lastMessage?.role !== "assistant") {
-      logger.warn("chat.append.invalid", {
-        chunkLength: chunk.length,
-        messageCount: messages.length,
-      });
-      return;
-    }
-
-    const nextMessages = [...messages];
-    nextMessages[nextMessages.length - 1] = {
-      ...lastMessage,
-      content: `${lastMessage.content}${chunk}`,
-    };
-
-    set({
-      messages: nextMessages,
+      return {
+        activeConversationId: lastConversationId,
+        focusedAssistantMessageId: getFocusedAssistantId(nextMessages),
+        lastError: null,
+        messages: nextMessages,
+      };
     });
   },
-  setStreaming(value) {
+  updateMessage(messageId, updater) {
+    set((state) => {
+      const nextMessages = state.messages.map((message) =>
+        message.id === messageId ? updater(message) : message,
+      );
+
+      return {
+        activeConversationId:
+          nextMessages.find((message) => message.id === messageId)?.conversationId ??
+          state.activeConversationId,
+        focusedAssistantMessageId: getFocusedAssistantId(nextMessages),
+        messages: nextMessages,
+      };
+    });
+  },
+  setMessages(messages, conversationId) {
     set({
-      isStreaming: value,
+      activeConversationId: conversationId,
+      focusedAssistantMessageId: getFocusedAssistantId(messages),
+      inFlightRequest: null,
+      isStreaming: false,
+      lastError: null,
+      messages,
+    });
+  },
+  hydrateConversation(conversation) {
+    set({
+      activeConversationId: conversation.id,
+      focusedAssistantMessageId: getFocusedAssistantId(conversation.messages ?? []),
+      inFlightRequest: null,
+      isStreaming: false,
+      lastError: null,
+      messages: conversation.messages ?? [],
+    });
+  },
+  setFocusedAssistantMessage(messageId) {
+    set({
+      focusedAssistantMessageId: messageId,
+    });
+  },
+  beginRequest(request) {
+    set({
+      inFlightRequest: request,
+      isStreaming: true,
+      lastError: null,
+    });
+  },
+  updateInFlightRequest(patch) {
+    set((state) => ({
+      inFlightRequest:
+        state.inFlightRequest === null ? null : { ...state.inFlightRequest, ...patch },
+    }));
+  },
+  finishRequest() {
+    set({
+      inFlightRequest: null,
+      isStreaming: false,
     });
   },
   setActiveConversation(id) {
@@ -84,6 +150,11 @@ export const useChatStore = create<ChatStoreState>()((set, get) => ({
   setError(error) {
     set({
       lastError: error,
+    });
+  },
+  startNewConversation() {
+    set({
+      ...CHAT_STORE_INITIAL_STATE,
     });
   },
   clear() {
@@ -97,4 +168,3 @@ export const useChatStore = create<ChatStoreState>()((set, get) => ({
 export function resetChatStore(): void {
   useChatStore.setState(CHAT_STORE_INITIAL_STATE);
 }
-

@@ -108,6 +108,30 @@ class AnalyticsResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Upload endpoint
+# ---------------------------------------------------------------------------
+
+
+class UploadResponse(BaseModel):
+    """Outgoing payload for POST /upload."""
+
+    filename: str
+    extension: str
+    chunks_added: int = Field(ge=0)
+    total_vectors: int = Field(ge=0)
+    ingested_at: float = Field(ge=0.0)
+
+
+class UploadStatusResponse(BaseModel):
+    """Outgoing payload for GET /upload/status."""
+
+    total_vectors: int = Field(ge=0)
+    allowed_extensions: list[str]
+    max_bytes: int = Field(ge=1)
+    last_upload: UploadResponse | None = None
+
+
+# ---------------------------------------------------------------------------
 # Error envelope
 # ---------------------------------------------------------------------------
 

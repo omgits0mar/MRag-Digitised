@@ -9,10 +9,14 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from typing import TYPE_CHECKING, Protocol
 
 import structlog
 
 from mrag.data.models import TextChunk
+
+if TYPE_CHECKING:
+    from mrag.data.parsers import ParsedDocument
 
 logger = structlog.get_logger(__name__)
 
@@ -208,3 +212,83 @@ class TextChunker:
             positions.append((idx, min(end, len(original_text))))
             search_start = end
         return positions
+
+    def chunk_documents(
+        self, documents: list[ParsedDocument]
+    ) -> list[TextChunk]:
+        """Chunk each ParsedDocument using the sliding-window strategy."""
+        result: list[TextChunk] = []
+        for parsed in documents:
+            if not parsed.text.strip():
+                continue
+            result.extend(self.chunk(parsed.text, parsed.doc_id))
+        return result
+
+
+class ChunkerProtocol(Protocol):
+    """Minimal protocol every chunker implements."""
+
+    def chunk_documents(
+        self, documents: list[ParsedDocument]
+    ) -> list[TextChunk]: ...
+
+
+# Alias: the existing TextChunker is the sentence-window strategy used for
+# prose formats (.txt, .md, .pdf, .docx).
+SentenceWindowChunker = TextChunker
+
+
+class RowChunker:
+    """One-chunk-per-document strategy for atomic row-like inputs (CSV).
+
+    Each ParsedDocument becomes a single TextChunk. If a row's token count
+    exceeds ``chunk_size`` it is split with a sliding window as a safety
+    fallback, so an outlier long row doesn't break downstream embedding.
+    """
+
+    def __init__(self, chunk_size: int = 512, chunk_overlap: int = 50) -> None:
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self._fallback = TextChunker(
+            chunk_size=chunk_size, chunk_overlap=chunk_overlap
+        )
+
+    def chunk_documents(
+        self, documents: list[ParsedDocument]
+    ) -> list[TextChunk]:
+        result: list[TextChunk] = []
+        for parsed in documents:
+            text = parsed.text.strip()
+            if not text:
+                continue
+            token_count = len(text.split())
+            if token_count > self.chunk_size:
+                result.extend(self._fallback.chunk(text, parsed.doc_id))
+                continue
+            result.append(
+                TextChunk(
+                    chunk_id=f"{parsed.doc_id}_chunk_0",
+                    doc_id=parsed.doc_id,
+                    text=text,
+                    start_pos=0,
+                    end_pos=len(text),
+                    token_count=token_count,
+                    chunk_index=0,
+                    total_chunks=1,
+                )
+            )
+        return result
+
+
+def get_chunker(
+    extension: str,
+    chunk_size: int = 512,
+    chunk_overlap: int = 50,
+) -> ChunkerProtocol:
+    """Return the appropriate chunker for the given file extension."""
+    normalized = extension.strip().lstrip(".").lower()
+    if normalized == "csv":
+        return RowChunker(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    return SentenceWindowChunker(
+        chunk_size=chunk_size, chunk_overlap=chunk_overlap
+    )

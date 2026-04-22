@@ -6,6 +6,8 @@ Provides O(1) lookup by FAISS integer ID and field-value filtering.
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -99,6 +101,11 @@ class MetadataStore:
         entry = MetadataEntry(faiss_index_id=faiss_id, **kwargs)
         self._entries[faiss_id] = entry
 
+    def add_entries(self, entries: list[MetadataEntry]) -> None:
+        """Append prepared entries to the store, keyed by their FAISS index IDs."""
+        for entry in entries:
+            self._entries[entry.faiss_index_id] = entry
+
     def get(self, faiss_id: int) -> MetadataEntry:
         """Retrieve metadata by FAISS ID.
 
@@ -127,11 +134,21 @@ class MetadataStore:
         return result
 
     def save(self, path: str) -> None:
-        """Persist metadata to JSON file."""
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        """Persist metadata to JSON file atomically (tmp + rename)."""
+        parent = Path(path).parent
+        parent.mkdir(parents=True, exist_ok=True)
         data = {str(k): v.to_dict() for k, v in self._entries.items()}
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        fd, tmp_path = tempfile.mkstemp(
+            prefix=".metadata_", suffix=".json.tmp", dir=str(parent)
+        )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            os.replace(tmp_path, path)
+        except Exception:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+            raise
         logger.info("metadata_saved", path=path, count=len(self._entries))
 
     def load(self, path: str) -> None:

@@ -37,6 +37,17 @@ npm run typecheck
 Mock mode is controlled by `VITE_ENABLE_MOCK` in `.env`. With the default `true` value, the app
 boots against MSW and does not require the backend to be running.
 
+For Feature 006, set `VITE_ENABLE_STREAMING=true` to exercise the streaming chat path. The mock
+backend also supports scenario tags in the submitted question text:
+
+- `[mock:fallback]`
+- `[mock:error]`
+- `[mock:timeout]`
+- `[mock:interrupt]`
+
+Use those tags to verify low-confidence answers, backend errors, timeout handling, and interrupted
+stream recovery without changing code or swapping handlers manually.
+
 ## Build and preview
 
 ```bash
@@ -62,7 +73,11 @@ npm run test:e2e
 ## File map
 
 - `src/components/layout/`: shell, header, sidebar, theme provider, env banner
+- `src/components/chat/`: transcript, composer, source panel, inline states, metadata footer
+- `src/components/conversations/`: reusable conversation list rows and delete confirmation
+- `src/hooks/`: health check, chat session orchestration, history loading, transcript scroll logic
 - `src/stores/`: Zustand stores for chat, conversations, and persisted settings
-- `src/api/`: typed backend DTOs, Axios client, endpoint wrappers
-- `src/mocks/`: MSW browser worker, handlers, and sample payloads
+- `src/api/`: typed backend DTOs, Axios client, streaming transport, endpoint wrappers
+- `src/lib/`: markdown/citation rendering, display formatters, shared utilities
+- `src/mocks/`: MSW browser worker, handlers, and the in-memory mock backend state
 - `tests/`: Vitest unit and integration coverage
